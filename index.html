@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a3a2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Academy">
+<meta name="format-detection" content="telephone=no">
+<title>Sports Academy Manager</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --em:#0a3a2a;--em2:#0f5a3f;--em3:#17805a;--eml:#e6f3ec;--gold:#d4a650;--goldl:#fbf3e1;
+  --bg:#f4f6f3;--card:#fff;--ink:#132119;--ink2:#3a4a40;--mut:#6f7d74;--line:#e4e9e3;
+  --red:#c8372d;--redl:#fdeceb;--amb:#a15c00;--ambl:#fff3dd;--blu:#2160ad;--blul:#e8f0fb;--wa:#1fa855;
+  --sh:0 1px 2px rgba(16,40,28,.05),0 8px 24px rgba(16,40,28,.06);--r:18px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg)}
+body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.sm{width:16px;height:16px}
+
+/* ---------- shell ---------- */
+.side{display:none}
+.appbar{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#082f22,#0f5a3f);color:#fff;padding:calc(12px + var(--st)) calc(16px + var(--sr)) 12px calc(16px + var(--sl));display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,#e8c172,#b8862f);display:grid;place-items:center;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.logo svg{width:24px;height:24px;stroke:#0a3a2a;stroke-width:2.2;fill:none}
+.brand{min-width:0;flex:1}
+.acn{display:flex;align-items:center;gap:6px;min-width:0}
+.acn b{font-size:16.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.acn button{border:0;background:rgba(255,255,255,.14);color:#fff;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;cursor:pointer;flex:none}
+.sub{font-size:12px;opacity:.75;font-weight:500}
+.sync{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.13);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.sync::before{content:"";width:7px;height:7px;border-radius:50%;background:#ffd27d}
+.sync.ok::before{background:#6dffaa}.sync.err::before{background:#ff8f80}.sync.local::before{background:#9cc7ff}
+main{max-width:1080px;margin:0 auto;padding:18px calc(14px + var(--sr)) calc(100px + var(--sb)) calc(14px + var(--sl))}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px calc(6px + var(--sr)) calc(6px + var(--sb)) calc(6px + var(--sl))}
+.bnav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;border-radius:12px}
+.bnav button svg{width:23px;height:23px}
+.bnav button.on{color:var(--em2)}
+.bnav button.on svg{stroke-width:2.3}
+.bnav button.on span.dot{background:var(--em3)}
+@media(min-width:900px){
+  .bnav{display:none}
+  .side{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;width:248px;background:linear-gradient(180deg,#082f22,#0c4a34);color:#fff;padding:20px 14px;z-index:12}
+  .side .sbrand{display:flex;gap:11px;align-items:center;padding:4px 8px 22px}
+  .side nav{display:flex;flex-direction:column;gap:3px}
+  .side nav button{border:0;background:none;color:rgba(255,255,255,.72);display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:12px;font-weight:600;cursor:pointer;text-align:left}
+  .side nav button:hover{background:rgba(255,255,255,.07);color:#fff}
+  .side nav button.on{background:rgba(255,255,255,.13);color:#fff}
+  .side nav button.on svg{color:var(--gold)}
+  .side .foot{margin-top:auto;font-size:12px;opacity:.6;padding:8px}
+  .wrap{margin-left:248px}
+  .appbar .logo{display:none}
+  .appbar{background:rgba(244,246,243,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--ink);border-bottom:1px solid var(--line)}
+  .appbar .acn button{background:#eaeee9;color:var(--ink)}
+  .appbar .sync{background:#fff;border:1px solid var(--line);color:var(--ink2)}
+  main{padding:24px 28px 60px}
+}
+
+/* ---------- type & layout ---------- */
+.ph{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:2px 0 16px;flex-wrap:wrap}
+h1{font-size:24px;margin:0;letter-spacing:-.02em;font-weight:800}
+h2{font-size:18px;margin:0;letter-spacing:-.01em}
+h3{font-size:15.5px;margin:0 0 12px;font-weight:800}
+.meta{font-size:12.5px;color:var(--mut);font-weight:500}
+.hint{font-size:12.5px;color:var(--mut);font-weight:500}
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+
+/* ---------- hero & kpis ---------- */
+.hero{background:radial-gradient(120% 140% at 100% 0%,#1f8a62 0%,#0f5a3f 45%,#082f22 100%);color:#fff;border-radius:22px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 14px 34px rgba(10,58,42,.28)}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;border:26px solid rgba(212,166,80,.16)}
+.hero .l{font-size:12.5px;opacity:.8;font-weight:600}
+.hero .v{font-size:34px;font-weight:800;letter-spacing:-.02em;margin:2px 0 14px}
+.hero .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative;z-index:1}
+.hero .mini div{background:rgba(255,255,255,.1);border-radius:14px;padding:10px 11px;cursor:pointer}
+.hero .mini b{display:block;font-size:17px}
+.hero .mini span{font-size:11.5px;opacity:.8;font-weight:600}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.qa button{border:0;background:#fff;border-radius:16px;padding:13px 4px 11px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
+.qa button i{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-style:normal}
+.qa button:nth-child(1) i{background:var(--eml);color:var(--em2)}.qa button:nth-child(2) i{background:var(--goldl);color:#9a6a10}.qa button:nth-child(3) i{background:var(--blul);color:var(--blu)}.qa button:nth-child(4) i{background:#f1ebfb;color:#6c3fc0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border-radius:16px;padding:13px 14px;box-shadow:var(--sh)}
+.kpi .l{font-size:11.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:22px;font-weight:800;margin-top:3px;letter-spacing:-.01em}
+.kpi .s{font-size:12px;color:var(--mut)}
+.kpi.red .v{color:var(--red)}.kpi.amb .v{color:var(--amb)}.kpi.grn .v{color:var(--em3)}
+
+/* ---------- controls ---------- */
+.btn{border:0;background:linear-gradient(180deg,#17805a,#0f6a4a);color:#fff;padding:11px 16px;border-radius:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;font-size:14px;white-space:nowrap;box-shadow:0 2px 6px rgba(15,90,63,.25);min-height:42px}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.btn.red{background:var(--red);box-shadow:none}
+.btn.wa{background:linear-gradient(180deg,#25c064,#1a9b4e);box-shadow:0 2px 6px rgba(31,168,85,.28)}
+.btn.gold{background:linear-gradient(180deg,#e3bb66,#c3913a);color:#2a1d05}
+.btn.sm{padding:8px 12px;font-size:13px;border-radius:10px;min-height:36px}
+.btn.xs{padding:6px 10px;font-size:12px;border-radius:9px;min-height:30px}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.ctrl input,.ctrl select{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;min-width:0;font-size:16px;min-height:44px}
+.ctrl select{-webkit-appearance:none;appearance:none;padding-right:32px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f7d74' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 12px center}
+.search{flex:1;min-width:180px;position:relative}
+.search input{width:100%;padding-left:38px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mut)}
+.seg{display:inline-flex;background:#e7ebe6;border-radius:13px;padding:3px;gap:2px;flex-wrap:wrap;max-width:100%}
+.seg button{border:0;background:none;padding:8px 12px;border-radius:10px;font-weight:700;font-size:13px;color:var(--mut);cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.scrollx{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.scrollx::-webkit-scrollbar{display:none}
+.scrollx .seg{flex-wrap:nowrap}
+
+/* ---------- lists ---------- */
+.list{display:flex;flex-direction:column;gap:9px}
+.item{background:#fff;border-radius:16px;padding:12px 13px;display:flex;gap:12px;align-items:center;box-shadow:var(--sh)}
+.card .item{box-shadow:none;border:1px solid var(--line)}
+.item.click{cursor:pointer}.item.click:active{transform:scale(.995)}
+.av{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-weight:800;flex:none;font-size:14px;color:#fff;background:linear-gradient(145deg,#1f8a62,#0f5a3f)}
+.nm{font-weight:700;font-size:15px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.b-red{background:var(--redl);color:var(--red)}.b-amb{background:var(--ambl);color:var(--amb)}.b-grn{background:var(--eml);color:var(--em3)}.b-gry{background:#eef0ed;color:var(--mut)}.b-blu{background:var(--blul);color:var(--blu)}.b-gold{background:var(--goldl);color:#8a5d0c}
+.amt{font-weight:800;font-size:15.5px}
+.empty{text-align:center;color:var(--mut);padding:30px 12px;font-weight:500}
+.empty .big{font-size:36px;margin-bottom:6px}
+.frow .acts{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}
+@media(max-width:520px){.frow{flex-wrap:wrap}.frow .right{width:100%;display:flex;justify-content:space-between;align-items:center;padding-left:54px}.frow .acts{margin-top:0}}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:14px;white-space:nowrap}
+th{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rk{font-weight:800;width:36px;color:var(--mut)}
+.bar{height:7px;background:#e8ece6;border-radius:9px;overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#17805a,#d4a650);border-radius:9px}
+tr.click{cursor:pointer}tr.click:hover td{background:#f8faf7}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:10px;align-items:end;margin-bottom:14px}
+.pod{background:#fff;border-radius:18px;padding:14px 8px;text-align:center;box-shadow:var(--sh);cursor:pointer}
+.pod .av{margin:0 auto 8px;width:48px;height:48px;border-radius:50%}
+.pod.p1{padding-top:20px;background:linear-gradient(180deg,#fff8e8,#fff)}
+.pod.p1 .av{width:58px;height:58px;background:linear-gradient(145deg,#e8c172,#b8862f);color:#2a1d05}
+.pod b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pod .sc{font-size:20px;font-weight:800;color:var(--em2)}
+.medal{font-size:18px}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;background:rgba(6,20,13,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;z-index:30;animation:fade .15s}
+.modal.hidden,.hidden{display:none!important}
+.sheet{background:#fff;width:100%;max-width:760px;max-height:94vh;max-height:94dvh;overflow:auto;border-radius:24px 24px 0 0;padding:8px 18px calc(22px + var(--sb));animation:up .22s cubic-bezier(.2,.8,.2,1);overscroll-behavior:contain}
+.sheet::before{content:"";display:block;width:40px;height:5px;border-radius:9px;background:#dfe4de;margin:4px auto 6px}
+.sheet.wide{max-width:1020px}
+@media(min-width:760px){.modal{align-items:center}.sheet{border-radius:24px;max-height:90vh;padding-top:18px}.sheet::before{display:none}}
+@keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;position:sticky;top:-8px;background:#fff;padding:8px 0;z-index:3}
+.x{border:0;background:#f0f2ef;width:36px;height:36px;border-radius:50%;cursor:pointer;flex:none;display:grid;place-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 12px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:700;color:var(--ink2)}
+label input,label select,label textarea{padding:11px 12px;border:1px solid #d9e0d7;border-radius:12px;background:#fbfcfb;font-weight:500;font-size:16px;width:100%;-webkit-appearance:none;appearance:none;min-height:46px;transition:border .15s,box-shadow .15s}
+label select{padding-right:34px;background:#fbfcfb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236f7d74' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right 13px center}
+label input:focus,label select:focus,label textarea:focus,.ctrl input:focus,.ctrl select:focus{outline:0;border-color:#5fb08b;box-shadow:0 0 0 3px rgba(23,128,90,.14);background:#fff}
+label textarea{resize:vertical;min-height:auto}
+label.chk{flex-direction:row;align-items:center;gap:8px;font-weight:600}
+label.chk input{width:20px;height:20px;min-height:0;-webkit-appearance:checkbox;appearance:checkbox;accent-color:var(--em3)}
+.paybox{background:#f5faf7;border:1px dashed #b5d6c3;border-radius:14px;padding:12px 13px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px 14px;font-size:14px;font-weight:600}
+.kv div span{display:block;font-size:11.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:1px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px}
+.stat{background:#f5f8f5;border-radius:13px;padding:10px;text-align:center}
+.stat b{display:block;font-size:19px}
+.stat span{font-size:11px;color:var(--mut);font-weight:700}
+.prof{display:flex;gap:14px;align-items:center}
+.prof .av{width:56px;height:56px;border-radius:18px;font-size:19px}
+.att{display:flex;gap:6px}
+.att button{border:1px solid var(--line);background:#fff;border-radius:11px;width:46px;height:40px;font-weight:800;cursor:pointer;font-size:14px;color:var(--mut)}
+.att button.p.on{background:var(--em3);border-color:var(--em3);color:#fff}
+.att button.a.on{background:var(--red);border-color:var(--red);color:#fff}
+.attsum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.attsum div{background:#f5f8f5;border-radius:12px;padding:8px;text-align:center;font-size:12px;color:var(--mut);font-weight:700}
+.attsum b{display:block;font-size:20px;color:var(--ink)}
+.bulk td{padding:5px 4px}
+.bulk input{width:54px;padding:8px 5px;border:1px solid #d9e0d7;border-radius:9px;text-align:center;font-size:16px;background:#fbfcfb}
+.bulk input.w{width:130px;text-align:left}
+.bulk td:first-child,.bulk th:first-child{position:sticky;left:0;background:#fff;z-index:1;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.more{display:grid;gap:8px}
+.more button{border:0;background:#f5f8f5;border-radius:16px;padding:15px;display:flex;gap:14px;align-items:center;font-weight:700;font-size:15.5px;cursor:pointer;text-align:left}
+.more button i{width:42px;height:42px;border-radius:12px;background:#fff;display:grid;place-items:center;color:var(--em2);font-style:normal;box-shadow:var(--sh)}
+.pill{display:inline-flex;gap:5px;align-items:center;background:#f0f3ef;border-radius:99px;padding:5px 11px;font-size:13px;margin:0 6px 6px 0;font-weight:600}
+.pill button{border:0;background:none;cursor:pointer;color:var(--red);font-weight:800;padding:0 2px}
+.wbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.notice{border-radius:16px;padding:13px 14px;margin-bottom:14px;font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
+.notice.blue{background:var(--blul);color:#173f70}.notice.red{background:var(--redl);color:#7a1d16}
+#toast{position:fixed;left:50%;bottom:calc(90px + var(--sb));transform:translateX(-50%);z-index:50;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:max-content;max-width:92vw}
+#toast div{background:#132119;color:#fff;padding:11px 16px;border-radius:13px;font-weight:600;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.22);animation:up .2s}
+#toast div.err{background:var(--red)}
+.steps{margin:0;padding-left:20px}.steps li{margin:7px 0}
+.install{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#fff8e8,#fff);border:1px solid #f0dfb5;border-radius:18px;padding:12px 14px;margin-bottom:14px;box-shadow:var(--sh)}
+.install img{width:46px;height:46px;border-radius:12px;flex:none}
+.install .x{width:30px;height:30px;background:transparent}
+.istep{display:flex;gap:12px;align-items:center;padding:12px;background:#f5f8f5;border-radius:14px;margin-bottom:8px;font-weight:600}
+.istep b.n{width:30px;height:30px;border-radius:50%;background:var(--em3);color:#fff;display:grid;place-items:center;flex:none}
+/* login */
+.login{position:fixed;inset:0;z-index:60;background:radial-gradient(120% 90% at 100% 0%,#1f8a62,#0a3a2a 60%,#061f16);display:grid;place-items:center;padding:20px}
+.login .box{background:#fff;border-radius:24px;padding:26px 22px;width:100%;max-width:380px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
+.login .logo{width:56px;height:56px;border-radius:16px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<aside class="side"><div class="sbrand"><div class="logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8 4.8c2.3 3.8 2.3 10.6 0 14.4M16 4.8c-2.3 3.8-2.3 10.6 0 14.4"/></svg></div><div style="min-width:0"><b id="sName" style="display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sports Academy</b><span class="sub">Academy Manager</span></div></div><nav id="snav"></nav><div class="foot" id="sfoot"></div></aside>
+<div class="wrap">
+  <header class="appbar">
+    <div class="logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8 4.8c2.3 3.8 2.3 10.6 0 14.4M16 4.8c-2.3 3.8-2.3 10.6 0 14.4"/></svg></div>
+    <div class="brand"><div class="acn"><b id="acName">Sports Academy</b></div><div class="sub" id="pageName">Dashboard</div></div>
+    <div id="sync" class="sync">Connecting</div>
+  </header>
+  <main id="view"></main>
+</div>
+<nav class="bnav" id="bnav"></nav>
+<div id="modal" class="modal hidden"><div class="sheet" id="sheet"></div></div>
+<div id="confirm" class="modal hidden"><div class="sheet" id="csheet" style="max-width:420px"></div></div>
+<div id="login" class="login hidden"></div>
+<div id="toast"></div>
+<script src="firebase-config.js"></script>
+<script>
+/* ============ icons ============ */
+const IC={
+ home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/>',
+ rupee:'<path d="M6 4h12M6 9h12M9 4c4 0 6 2 6 5s-2 5-6 5H7l8 7"/>',
+ att:'<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M9 15l2 2 4-4"/>',
+ chart:'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
+ trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a4 4 0 0 1-4 4M7 5H4v2a4 4 0 0 0 4 4"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>',
+ more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+ wa:'<path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-4.7A8.5 8.5 0 1 1 20.5 11.6z"/><path d="M9 9.5c.3 2 2.2 4.2 4.8 5l1.2-1.2"/>',
+ x:'<path d="M6 6l12 12M18 6 6 18"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+ star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+ bat:'<circle cx="12" cy="12" r="8.5"/><path d="M8 4.8c2.3 3.8 2.3 10.6 0 14.4M16 4.8c-2.3 3.8-2.3 10.6 0 14.4"/>',
+ out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/>',
+ receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+ up:'<path d="M3 17 9 11l4 4 8-8"/><path d="M15 7h6v6"/>',
+};
+const ic=(n,c='')=>`<svg class="i ${c}" viewBox="0 0 24 24">${IC[n]||''}</svg>`;
+
+/* ============ helpers ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>iso(new Date());
+const P=s=>{const [y,m,d]=String(s).split('-').map(Number);return new Date(y,(m||1)-1,d||1)};
+const addMonths=(s,n)=>{const d=P(s);const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return iso(d)};
+const addDays=(s,n)=>{const d=P(s);d.setDate(d.getDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((P(a)-P(b))/864e5);
+const fmtD=s=>s?P(s).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';
+const money=n=>'₹'+Math.round(+n||0).toLocaleString('en-IN');
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+const sum=(a,k)=>a.reduce((t,x)=>t+num(x[k]),0);
+const initials=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+const GR=[['#1f8a62','#0f5a3f'],['#2f6fc4','#1d4a8a'],['#c98a2c','#9a6312'],['#8a4fc9','#5d2f96'],['#d0524a','#9c2f28'],['#1d9aa6','#106a73'],['#5a7d2a','#3c5a17']];
+const avStyle=n=>{let h=0;for(const c of String(n||''))h=(h*31+c.charCodeAt(0))>>>0;const g=GR[h%GR.length];return `background:linear-gradient(145deg,${g[0]},${g[1]})`};
+const av=(n,cls='')=>`<div class="av ${cls}" style="${avStyle(n)}">${esc(initials(n))}</div>`;
+const parseOvers=v=>{v=String(v||'').trim();if(!v)return 0;const [o,b]=v.split('.');return (parseInt(o)||0)*6+Math.min(5,parseInt(b||'0')||0)};
+const showOvers=b=>Math.floor(b/6)+(b%6?'.'+(b%6):'');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const autoId=()=>{const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';let s='';for(let i=0;i<20;i++)s+=c[Math.floor(Math.random()*c.length)];return s};
+function normPhone(ph){let d=String(ph||'').replace(/\D/g,'');if(d.length===11&&d[0]==='0')d=d.slice(1);if(d.length===10)d='91'+d;return d.length>=11&&d.length<=15?d:''}
+function waLink(ph,msg){const p=normPhone(ph);if(!p)return '';return 'https://wa.me/'+p+(msg?'?text='+encodeURIComponent(msg):'')}
+function fillTpl(t,o){return String(t||'').split('\n').filter(line=>{const ks=[...line.matchAll(/\{(\w+)\}/g)].map(m=>m[1]);return !ks.some(k=>o[k]===''||o[k]==null)}).map(line=>line.replace(/\{(\w+)\}/g,(m,k)=>o[k]??m)).join('\n').trim()}
+
+const ROLES=['Batsman','Bowler','All-rounder','Wicket-keeper'];
+const BAT=['Right-hand bat','Left-hand bat'];
+const BOWL=['Right-arm fast','Right-arm medium','Right-arm off-spin','Right-arm leg-spin','Left-arm fast','Left-arm medium','Left-arm spin','Does not bowl'];
+const MODES=['Cash','UPI','Bank transfer','Card','Cheque'];
+const KINDS={plan:'Plan fee',admission:'Admission fee',kit:'Kit fee',other:'Other'};
+const DEF={name:'My Sports Academy',phone:'',upi:'',address:'',remindDays:3,
+  batches:['Morning','Evening'],
+  sports:[{id:'cricket',name:'Cricket',skills:['Batting','Bowling','Fielding','Fitness','Discipline']}],
+  admissionFee:0,kitFee:0,
+  weights:{perf1:30,perf2:30,coach:25,att:15},
+  reminderTpl:'Namaste {parent} 🙏\n{academy} se reminder: {name} ki fees {amount} {status}.\nDue date: {due_date} ({plan})\nUPI: {upi}\nPayment ke baad screenshot bhej dein. Dhanyavaad!',
+  receiptTpl:'Namaste {parent} 🙏\n{name} ki {type} {amount} receive ho gayi ({mode}, {date}).\nNext due date: {next_due}\nDhanyavaad,\n{academy}'};
+function normSettings(d){d=d||{};const s={...DEF,...d,weights:{...DEF.weights,...(d.weights||{})}};
+  s.batches=Array.isArray(s.batches)?s.batches.filter(Boolean):[];
+  let sp=Array.isArray(s.sports)?s.sports.filter(x=>x&&x.id):[];
+  if(!sp.find(x=>x.id==='cricket'))sp=[DEF.sports[0],...sp];
+  s.sports=sp.map(x=>({...x,skills:Array.isArray(x.skills)&&x.skills.length?x.skills:['Skill','Fitness','Discipline']}));
+  return s}
+
+/* ============ storage adapters ============ */
+// 1) claude.ai artifact database  2) Firebase (sync on all phones/PCs, with login)  3) this device only
+function localDB(){
+  const KEY='academy-data-v1';let store={};try{store=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){store={}}
+  const subs=new Set(),meta={fromCache:false,hasPendingWrites:false};
+  const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){toast('Device storage is full — take a backup','err')}};
+  const fire=()=>subs.forEach(f=>{try{f()}catch(e){console.error(e)}});
+  window.addEventListener('storage',e=>{if(e.key===KEY){try{store=JSON.parse(e.newValue||'{}')||{}}catch(x){}fire()}});
+  const clone=o=>JSON.parse(JSON.stringify(o));
+  const dsnap=p=>({id:p.split('/').pop(),exists:Object.prototype.hasOwnProperty.call(store,p),data:()=>store[p],metadata:meta});
+  const docRef=p=>({id:p.split('/').pop(),path:p,
+    get:async()=>dsnap(p),
+    set:async d=>{store[p]=clone(d);persist();setTimeout(fire,0)},
+    update:async d=>{if(!store[p])throw {code:'invalid_argument',message:'Document missing'};store[p]={...store[p],...clone(d)};persist();setTimeout(fire,0)},
+    delete:async()=>{delete store[p];persist();setTimeout(fire,0)},
+    onSnapshot:n=>{const f=()=>n(dsnap(p));subs.add(f);setTimeout(f,0);return()=>subs.delete(f)}});
+  const colRef=c=>({path:c,doc:id=>docRef(c+'/'+(id||autoId())),add:async d=>{const r=docRef(c+'/'+autoId());await r.set(d);return r},
+    onSnapshot:n=>{const f=()=>{const docs=Object.keys(store).filter(k=>k.slice(0,k.lastIndexOf('/'))===c&&k.split('/').length===c.split('/').length+1).sort().map(dsnap);n({docs,size:docs.length,empty:!docs.length,metadata:meta})};subs.add(f);setTimeout(f,0);return()=>subs.delete(f)}});
+  return {doc:docRef,collection:colRef};
+}
+async function firebaseDB(cfg){
+  const V='10.12.2',B='https://www.gstatic.com/firebasejs/'+V+'/';
+  const [A,F,U]=await Promise.all([import(B+'firebase-app.js'),import(B+'firebase-firestore.js'),import(B+'firebase-auth.js')]);
+  const app=A.initializeApp(cfg);
+  let fs;try{fs=F.initializeFirestore(app,{ignoreUndefinedProperties:true,localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})})}catch(e){fs=F.getFirestore(app)}
+  const auth=U.getAuth(app);
+  const w=s=>({id:s.id,exists:s.exists(),data:()=>s.data(),metadata:s.metadata});
+  const docRef=p=>{const r=F.doc(fs,p);return {id:r.id,path:p,get:async()=>w(await F.getDoc(r)),set:d=>F.setDoc(r,d),update:d=>F.updateDoc(r,d),delete:()=>F.deleteDoc(r),onSnapshot:(n,e)=>F.onSnapshot(r,{includeMetadataChanges:true},s=>n(w(s)),e)}};
+  const colRef=c=>({path:c,doc:id=>docRef(c+'/'+(id||F.doc(F.collection(fs,c)).id)),add:async d=>{const r=await F.addDoc(F.collection(fs,c),d);return docRef(c+'/'+r.id)},
+    onSnapshot:(n,e)=>F.onSnapshot(F.collection(fs,c),{includeMetadataChanges:true},s=>n({docs:s.docs.map(w),size:s.size,empty:s.empty,metadata:s.metadata}),e),
+    where:(fl,op,v)=>({onSnapshot:(n,e)=>F.onSnapshot(F.query(F.collection(fs,c),F.where(fl,op,v)),{includeMetadataChanges:true},s=>n({docs:s.docs.map(w),size:s.size,empty:s.empty,metadata:s.metadata}),e)})});
+  return {db:{doc:docRef,collection:colRef},auth,U};
+}
+
+/* ============ state ============ */
+const S={students:[],plans:[],payments:[],perf:[],ratings:[],att:{},settings:normSettings({}),loaded:false};
+const UI={tab:'home',q:'',fBatch:'',fSport:'',fStatus:'active',feeView:'due',feeFilter:'attention',payMonth:today().slice(0,7),
+  attDate:today(),attBatch:'',attSport:'cricket',rkSport:'cricket',rkBatch:'',rkPeriod:'90',perfSport:'cricket',modal:null,
+  pBatch:'',pDate:today(),pTitle:'',pKind:'Match'};
+const MODE={kind:'none',fb:null};
+let db=null,unsubs=[],PFX='';
+const C=c=>db.collection(PFX+c),D=p=>db.doc(PFX+p);
+const _ls=1,lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const myEmail=()=>(MODE.fb&&MODE.fb.auth.currentUser&&MODE.fb.auth.currentUser.email||'').toLowerCase();
+let pendingName='';
+const stu=id=>S.students.find(s=>s.id===id);
+const sportOf=id=>S.settings.sports.find(x=>x.id===id)||{id,name:id,skills:['Skill']};
+const plan=id=>S.plans.find(p=>p.id===id);
+const pAmt=(pl,d)=>(pl&&num(pl.newAmount)>0&&pl.newFrom&&(d||today())>=pl.newFrom)?num(pl.newAmount):num(pl&&pl.amount);
+const planPrice=pl=>money(pAmt(pl,today()))+(num(pl.newAmount)>0&&pl.newFrom&&today()<pl.newFrom?` → ${money(pl.newAmount)} from ${fmtD(pl.newFrom)}`:'');
+const active=()=>S.students.filter(s=>s.status!=='inactive');
+
+/* ============ fees ============ */
+function feeInfo(s){
+  const st=S.settings,pl=plan(s.planId),t=today();
+  const one=(num(s.admissionFee)>0&&!s.admissionPaid?num(s.admissionFee):0)+(num(s.kitFee)>0&&!s.kitPaid?num(s.kitFee):0);
+  if(!pl)return {status:one>0?'pending':'noplan',amount:one,one,plan:null,due:null,days:null,periods:0,planAmt:0};
+  const due=s.nextDue||s.joinDate||t,days=diff(due,t);
+  let periods=0,owed=0;if(days<=0){let d=due;while(d<=t&&periods<60){periods++;owed+=pAmt(pl,d);d=addMonths(d,num(pl.months)||1)}}
+  let status;
+  if(days<0)status='overdue';else if(days===0)status='due';else if(days<=num(st.remindDays))status='soon';else status=one>0?'pending':'paid';
+  const planAmt=periods>0?owed:(status==='soon'?pAmt(pl,due):0);
+  return {status,amount:planAmt+one,one,plan:pl,due,days,periods,planAmt};
+}
+function feeBadge(f){
+  switch(f.status){
+    case 'overdue':return `<span class="badge b-red">Overdue ${-f.days}d</span>`;
+    case 'due':return `<span class="badge b-amb">Due today</span>`;
+    case 'soon':return `<span class="badge b-amb">Due in ${f.days}d</span>`;
+    case 'pending':return `<span class="badge b-amb">One-time fee pending</span>`;
+    case 'paid':return `<span class="badge b-grn">Paid till ${fmtD(f.due)}</span>`;
+    default:return `<span class="badge b-gry">No fee plan</span>`;
+  }
+}
+const needsAttention=f=>['overdue','due','soon','pending'].includes(f.status);
+function reminderMsg(s,f){
+  const st=S.settings;
+  const word={overdue:'pending hai (overdue)',due:'aaj due hai',soon:`${f.days} din mein due hai`,pending:'pending hai'}[f.status]||'due hai';
+  const parts=[];if(f.planAmt>0)parts.push(f.plan.name+(f.periods>1?` ×${f.periods}`:''));if(f.one>0)parts.push('admission/kit');
+  return fillTpl(st.reminderTpl,{name:s.name,parent:s.parent||'Parent',amount:money(f.amount),status:word,due_date:fmtD(f.due||today()),plan:parts.join(' + ')||'Fees',academy:st.name,upi:st.upi||'',phone:st.phone||''});
+}
+function receiptMsg(p,s){
+  const st=S.settings;const nd=p.kind==='plan'?p.coversTo:(s&&s.nextDue);
+  return fillTpl(st.receiptTpl,{name:s?s.name:p.studentName,parent:(s&&s.parent)||'Parent',amount:money(p.amount),type:(p.kind==='plan'?(p.planName||'fees'):KINDS[p.kind]||'payment').toLowerCase(),mode:p.mode||'Cash',date:fmtD(p.date),next_due:nd?fmtD(nd):'',academy:st.name,phone:st.phone||''});
+}
+function remindBtn(s,f,size='sm'){
+  const l=waLink(s.phone,reminderMsg(s,f));
+  if(!l)return `<span class="badge b-gry">No WhatsApp no.</span>`;
+  return `<a class="btn wa ${size}" href="${esc(l)}" target="_blank" rel="noopener" data-act="reminded" data-id="${s.id}">${ic('wa','sm')} Remind</a>`;
+}
+
+/* ============ rankings ============ */
+function rankings(sport,batch,period){
+  const since=period==='all'?'0000':addDays(today(),-num(period));
+  const w=S.settings.weights,cr=sport==='cricket';
+  const list=S.students.filter(s=>s.status!=='inactive'&&(s.sport||'cricket')===sport&&(!batch||s.batch===batch));
+  const attDocs=Object.entries(S.att).filter(([d])=>d>=since);
+  const rows=list.map(s=>{
+    const pf=S.perf.filter(p=>p.studentId===s.id&&p.date>=since);
+    let a=0,b=0;
+    if(cr){
+      const runs=sum(pf,'runs'),balls=sum(pf,'balls'),f4=sum(pf,'fours'),x6=sum(pf,'sixes'),sr=balls?runs/balls*100:0;
+      a=runs+f4+x6*2+(sr>=100?runs*0.2:0);
+      const wk=sum(pf,'wkts'),bb=sum(pf,'bb'),rg=sum(pf,'rg'),fl=sum(pf,'ct')+sum(pf,'ro'),ov=bb/6,ec=ov?rg/ov:0;
+      b=wk*20+(ov?Math.max(0,8-ec)*ov*2:0)+fl*10;
+    }else a=sum(pf,'score');
+    const rt=S.ratings.filter(r=>r.studentId===s.id&&r.date>=since);
+    const coach=rt.length?rt.reduce((t,r)=>t+num(r.avg),0)/rt.length*10:0;
+    let mk=0,pr=0;attDocs.forEach(([d,doc])=>{const v=doc.present&&doc.present[s.id];if(v===true||v===false){mk++;if(v)pr++}});
+    return {s,a,b,coach,att:mk?pr/mk*100:0,mk,pr,games:pf.length,rated:rt.length};
+  });
+  const ma=Math.max(0,...rows.map(r=>r.a)),mb=Math.max(0,...rows.map(r=>r.b));
+  const W1=cr?num(w.perf1):num(w.perf1)+num(w.perf2),W2=cr?num(w.perf2):0,tot=(W1+W2+num(w.coach)+num(w.att))||1;
+  rows.forEach(r=>{r.aN=ma?r.a/ma*100:0;r.bN=mb?r.b/mb*100:0;r.total=(r.aN*W1+r.bN*W2+r.coach*num(w.coach)+r.att*num(w.att))/tot});
+  rows.sort((x,y)=>y.total-x.total||String(x.s.name).localeCompare(y.s.name));
+  rows.forEach((r,i)=>r.rank=i+1);
+  return rows;
+}
+function cricketStats(id,since='0000'){
+  const pf=S.perf.filter(p=>p.studentId===id&&p.date>=since&&(p.sport||'cricket')==='cricket');
+  const bat=pf.filter(p=>num(p.balls)>0||num(p.runs)>0||p.out);
+  const runs=sum(pf,'runs'),balls=sum(pf,'balls'),outs=pf.filter(p=>p.out).length,hs=Math.max(0,...pf.map(p=>num(p.runs)));
+  const wk=sum(pf,'wkts'),bb=sum(pf,'bb'),rg=sum(pf,'rg');
+  let best=null;pf.filter(p=>num(p.bb)>0).forEach(p=>{if(!best||num(p.wkts)>best.w||(num(p.wkts)===best.w&&num(p.rg)<best.r))best={w:num(p.wkts),r:num(p.rg)}});
+  return {games:pf.length,inns:bat.length,runs,balls,outs,hs,avg:outs?runs/outs:(bat.length?runs:0),sr:balls?runs/balls*100:0,f4:sum(pf,'fours'),x6:sum(pf,'sixes'),wk,bb,rg,econ:bb?rg/(bb/6):0,best,ct:sum(pf,'ct'),ro:sum(pf,'ro')};
+}
+
+/* ============ UI bits ============ */
+function toast(m,type){const d=document.createElement('div');d.textContent=m;if(type)d.className=type;$('#toast').appendChild(d);setTimeout(()=>d.remove(),3200)}
+function setSync(t,c){const e=$('#sync');e.textContent=t;e.className='sync '+(c||'')}
+async function W(fn,okMsg){
+  if(!db){toast('Data not connected yet','err');return false}
+  try{await fn();if(okMsg)toast(okMsg);return true}
+  catch(e){console.error(e);const c=e&&e.code;toast(c==='invalid_argument'||c==='permission-denied'?'Not allowed — you may only have view access':c==='quota_exceeded'?'Storage full':'Save failed, please try again','err');return false}
+}
+const queues={};
+function queue(path,fn){queues[path]=(queues[path]||Promise.resolve()).then(fn).catch(e=>{console.error(e);toast('Save failed','err')});return queues[path]}
+const inp=(n,l,v,t='text',x='')=>`<label>${l}<input name="${n}" type="${t}" value="${esc(v??'')}" ${x}></label>`;
+const sel=(n,l,opts,v,x='')=>`<label>${l}<select name="${n}" ${x}>${opt(opts,v,'—')}</select></label>`;
+const opt=(opts,v,blank)=>opts.map(o=>{const [ov,ol]=Array.isArray(o)?o:[o,o||blank||''];return `<option value="${esc(ov)}" ${String(ov)===String(v??'')?'selected':''}>${esc(ol)}</option>`}).join('');
+const sportOpts=()=>S.settings.sports.map(x=>[x.id,x.name]);
+const batchOpts=(all='All batches')=>[['',all],...S.settings.batches.map(b=>[b,b])];
+const xbtn=`<button class="x" data-act="close" aria-label="Close">${ic('x','sm')}</button>`;
+
+function openModal(html,cfg){UI.modal=cfg||{type:'form'};$('#sheet').className='sheet'+(cfg&&cfg.wide?' wide':'');$('#sheet').innerHTML=html;$('#modal').classList.remove('hidden');$('#sheet').scrollTop=0;document.body.style.overflow='hidden'}
+function closeModal(){UI.modal=null;$('#modal').classList.add('hidden');$('#sheet').innerHTML='';document.body.style.overflow=''}
+let confirmCb=null;
+function ask(msg,yes,cb,danger=true){confirmCb=cb;$('#csheet').innerHTML=`<h2 style="margin:6px 0 10px">Are you sure?</h2><p style="margin:0 0 16px;color:var(--ink2)">${msg}</p><div class="actions"><button class="btn ghost" data-act="cno">Cancel</button><button class="btn ${danger?'red':''}" data-act="cyes">${esc(yes)}</button></div>`;$('#confirm').classList.remove('hidden')}
+
+/* ============ navigation ============ */
+const TABS=[['home','Home','home'],['students','Students','users'],['fees','Fees','rupee'],['attendance','Attendance','att'],['performance','Performance','chart'],['rankings','Rankings','trophy'],['settings','Settings','gear']];
+const BTABS=['home','students','fees','attendance'];
+function renderTabs(){
+  $('#snav').innerHTML=TABS.map(([k,l,i])=>`<button class="${UI.tab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i)}${l}</button>`).join('');
+  const moreOn=!BTABS.includes(UI.tab);
+  $('#bnav').innerHTML=TABS.filter(t=>BTABS.includes(t[0])).map(([k,l,i])=>`<button class="${UI.tab===k?'on':''}" data-act="tab" data-t="${k}">${ic(i)}<span>${l==='Attendance'?'Attend':l}</span></button>`).join('')+`<button class="${moreOn?'on':''}" data-act="more">${ic('more')}<span>${moreOn?TABS.find(t=>t[0]===UI.tab)[1]:'More'}</span></button>`;
+  $('#pageName').textContent=TABS.find(t=>t[0]===UI.tab)[1];
+}
+
+/* ============ install app (PWA) ============ */
+let deferredInstall=null;
+const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const canInstall=()=>MODE.kind!=='claude'&&!isStandalone()&&(!!deferredInstall||isIOS());
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;render()});
+window.addEventListener('appinstalled',()=>{deferredInstall=null;toast('App installed — open it from your home screen 🎉');render()});
+function installBanner(){
+  if(!canInstall()||lsGet('install-hide')===today())return '';
+  return `<div class="install"><img src="icons/icon-192.png" alt=""><div class="grow"><b>Install the app</b><div class="meta">Open it from your home screen like a normal app</div></div><button class="btn sm" data-act="install">Install</button><button class="x" data-act="installHide" aria-label="Hide">${ic('x','sm')}</button></div>`;
+}
+const SHARE_SVG='<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:#2160ad;stroke-width:2;vertical-align:-4px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+
+/* ============ views ============ */
+const V={};
+const medal=r=>r===1?'<span class="medal">🥇</span>':r===2?'<span class="medal">🥈</span>':r===3?'<span class="medal">🥉</span>':'#'+r;
+function modeNotice(){
+  if(MODE.kind==='local')return `<div class="notice blue">${ic('att')}<div><b>Saved on this device only.</b> To use the same data on your iPhone and PC together, connect free Firebase sync — see the README steps. <a href="#" data-act="tab" data-t="settings" style="color:inherit;font-weight:700">Settings → Data</a></div></div>`;
+  if(MODE.kind==='none')return `<div class="notice red"><div><b>Data not connected.</b> Please reload the page.</div></div>`;
+  return '';
+}
+V.home=()=>{
+  const st=S.settings,act=active();
+  if(!S.students.length)return `${installBanner()}${modeNotice()}<div class="hero"><div class="l">Welcome to</div><div class="v" style="font-size:26px">${esc(st.name)}</div><div style="position:relative;z-index:1;opacity:.9;font-size:14px">Manage students, fees, WhatsApp reminders, attendance and rankings — all in one place.</div></div>
+   <div class="card"><h3>Get started in 3 steps</h3><ol class="steps">
+   <li><b>Settings</b> → academy name, WhatsApp number, UPI ID, batches and fee plans.</li>
+   <li><b>Students</b> → add each student with the parent's WhatsApp number and fee plan.</li>
+   <li>Use <b>Fees</b> for one-tap WhatsApp reminders, and <b>Attendance</b>, <b>Performance</b>, <b>Rankings</b> every week.</li></ol>
+   <div class="row" style="margin-top:14px"><button class="btn" data-act="addStudent">${ic('plus','sm')} Add first student</button><button class="btn ghost" data-act="tab" data-t="settings">Open Settings</button></div></div>`;
+  const fi=act.map(s=>({s,f:feeInfo(s)}));
+  const over=fi.filter(x=>x.f.status==='overdue'),soon=fi.filter(x=>['due','soon','pending'].includes(x.f.status));
+  const m=today().slice(0,7),mp=S.payments.filter(p=>(p.date||'').startsWith(m)),coll=sum(mp,'amount');
+  const ad=S.att[today()],pres=ad?Object.values(ad.present||{}).filter(v=>v===true).length:0;
+  const top=rankings('cricket','','90').slice(0,5);
+  const attn=[...over,...soon].slice(0,6);
+  const mon=new Date().toLocaleDateString('en-IN',{month:'long'});
+  return `${installBanner()}${modeNotice()}
+  <div class="hero"><div class="l">Collected in ${mon}</div><div class="v">${money(coll)}</div>
+   <div class="mini"><div data-act="feeJump" data-v="overdue"><b>${money(over.reduce((a,x)=>a+x.f.amount,0))}</b><span>Overdue · ${over.length}</span></div>
+   <div data-act="feeJump" data-v="attention"><b>${money(soon.reduce((a,x)=>a+x.f.amount,0))}</b><span>Due soon · ${soon.length}</span></div>
+   <div data-act="tab" data-t="students"><b>${act.length}</b><span>Students</span></div></div></div>
+  <div class="qa"><button data-act="addStudent"><i>${ic('plus')}</i>Student</button><button data-act="pay"><i>${ic('rupee')}</i>Payment</button><button data-act="tab" data-t="attendance"><i>${ic('att')}</i>Attendance</button><button data-act="quickScores"><i>${ic('bat')}</i>Scores</button></div>
+  <div class="card"><div class="row between" style="margin-bottom:12px"><h3 style="margin:0">Fee reminders to send</h3><button class="btn ghost xs" data-act="feeJump" data-v="attention">See all</button></div>
+   ${attn.length?`<div class="list">${attn.map(({s,f})=>feeRow(s,f)).join('')}</div>`:`<div class="empty"><div class="big">🎉</div>No fees due right now</div>`}</div>
+  <div class="kpis"><div class="kpi grn"><div class="l">Payments this month</div><div class="v">${mp.length}</div></div><div class="kpi" data-act="tab" data-t="attendance"><div class="l">Present today</div><div class="v">${ad?pres:'—'}</div><div class="s">${ad?'marked':'not marked yet'}</div></div></div>
+  <div class="card"><div class="row between" style="margin-bottom:8px"><h3 style="margin:0">Top cricketers · 90 days</h3><button class="btn ghost xs" data-act="tab" data-t="rankings">Full ranking</button></div>
+   ${top.length&&top[0].total>0?`<div class="tw"><table><tbody>${top.map(r=>`<tr class="click" data-act="profile" data-id="${r.s.id}"><td class="rk">${medal(r.rank)}</td><td><b>${esc(r.s.name)}</b><div class="meta">${esc(r.s.batch||'')}</div></td><td style="width:38%"><div class="bar"><i style="width:${r.total.toFixed(0)}%"></i></div></td><td><b>${r.total.toFixed(1)}</b></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">Add scores, coach ratings and attendance to see rankings.</div>`}</div>`;
+};
+function feeRow(s,f){
+  const rem=s.lastReminded===today()?`<span class="badge b-blu">✓ Reminded today</span>`:s.lastReminded?`<span class="meta">Reminded ${fmtD(s.lastReminded)}</span>`:'';
+  return `<div class="item frow">${av(s.name)}
+   <div class="grow" data-act="profile" data-id="${s.id}" style="cursor:pointer"><div class="nm">${esc(s.name)}</div>
+    <div class="meta">${esc(f.plan?f.plan.name:'')}${f.due?' · due '+fmtD(f.due):''}${s.batch?' · '+esc(s.batch):''}</div>
+    <div class="row" style="margin-top:5px;gap:6px">${feeBadge(f)} ${rem}</div></div>
+   <div class="right" style="text-align:right"><div class="amt">${money(f.amount)}</div><div class="acts">${remindBtn(s,f)}<button class="btn ghost sm" data-act="pay" data-id="${s.id}">₹ Paid</button></div></div></div>`;
+}
+
+V.students=()=>{
+  const q=UI.q.toLowerCase();
+  const list=S.students.filter(s=>(!UI.fStatus||(UI.fStatus==='active'?s.status!=='inactive':s.status==='inactive'))&&(!UI.fBatch||s.batch===UI.fBatch)&&(!UI.fSport||(s.sport||'cricket')===UI.fSport)&&(!q||[s.name,s.parent,s.phone].join(' ').toLowerCase().includes(q))).sort((a,b)=>String(a.name).localeCompare(b.name));
+  return `${modeNotice()}<div class="ph"><div><h1>Students</h1><div class="meta">${list.length} shown · ${active().length} active</div></div><button class="btn" data-act="addStudent">${ic('plus','sm')} Add student</button></div>
+  <div class="ctrl"><div class="search">${ic('search','sm')}<input type="search" id="q" data-f="q" placeholder="Search name, parent or phone" value="${esc(UI.q)}"></div>
+   <select data-f="fBatch">${opt(batchOpts(),UI.fBatch)}</select>
+   ${S.settings.sports.length>1?`<select data-f="fSport">${opt([['','All sports'],...sportOpts()],UI.fSport)}</select>`:''}
+   <select data-f="fStatus">${opt([['active','Active'],['inactive','Inactive'],['','All']],UI.fStatus)}</select></div>
+  ${list.length?`<div class="list">${list.map(s=>{const f=feeInfo(s);return `<div class="item click" data-act="profile" data-id="${s.id}">${av(s.name)}
+   <div class="grow"><div class="nm">${esc(s.name)} ${s.status==='inactive'?'<span class="badge b-gry">Inactive</span>':''}</div>
+   <div class="meta">${esc(sportOf(s.sport||'cricket').name)}${s.batch?' · '+esc(s.batch):''}${s.role?' · '+esc(s.role):''}</div>
+   ${s.status!=='inactive'?`<div style="margin-top:5px">${feeBadge(f)}</div>`:''}</div>
+   <svg class="i" viewBox="0 0 24 24" style="color:#b9c3bc"><path d="m9 6 6 6-6 6"/></svg></div>`}).join('')}</div>`:`<div class="card empty"><div class="big">👥</div>No students found</div>`}`;
+};
+
+V.fees=()=>{
+  const seg=`<div class="seg" style="margin-bottom:14px">${[['due','Fee status'],['payments','Payments received']].map(([k,l])=>`<button class="${UI.feeView===k?'on':''}" data-act="setUI" data-k="feeView" data-v="${k}">${l}</button>`).join('')}</div>`;
+  const head=`${modeNotice()}<div class="ph"><div><h1>Fees</h1><div class="meta">Reminders, payments & receipts</div></div><button class="btn" data-act="pay">${ic('plus','sm')} Record payment</button></div>${seg}`;
+  if(UI.feeView==='payments'){
+    const pm=S.payments.filter(p=>!UI.payMonth||(p.date||'').startsWith(UI.payMonth)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||'').localeCompare(a.createdAt||''));
+    const byK={};pm.forEach(p=>byK[p.kind]=(byK[p.kind]||0)+num(p.amount));
+    return `${head}<div class="ctrl"><input type="month" data-f="payMonth" value="${esc(UI.payMonth)}"><button class="btn ghost sm" data-act="setUI" data-k="payMonth" data-v="">All time</button></div>
+     <div class="kpis"><div class="kpi grn"><div class="l">Total received</div><div class="v">${money(sum(pm,'amount'))}</div><div class="s">${pm.length} payments</div></div>
+      ${Object.entries(byK).map(([k,v])=>`<div class="kpi"><div class="l">${esc(KINDS[k]||k)}</div><div class="v">${money(v)}</div></div>`).join('')}</div>
+     ${pm.length?`<div class="list">${pm.map(p=>{const s=stu(p.studentId);const l=s?waLink(s.phone,receiptMsg(p,s)):'';return `<div class="item frow"><div class="av" style="background:linear-gradient(145deg,#e3bb66,#c3913a);color:#2a1d05">₹</div>
+      <div class="grow"><div class="nm">${esc(s?s.name:(p.studentName||'Deleted student'))}</div>
+      <div class="meta">${fmtD(p.date)} · ${esc(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' ×'+p.periods:''):KINDS[p.kind]||p.kind)} · ${esc(p.mode||'')}</div>${p.kind==='plan'&&p.coversFrom?`<div class="meta">Covers ${fmtD(p.coversFrom)} → ${fmtD(p.coversTo)}</div>`:''}${p.note?`<div class="meta">${esc(p.note)}</div>`:''}</div>
+      <div class="right" style="text-align:right"><div class="amt">${money(p.amount)}</div><div class="acts">${l?`<a class="btn wa xs" href="${esc(l)}" target="_blank" rel="noopener">${ic('receipt','sm')} Receipt</a>`:''}<button class="btn ghost xs" data-act="delPay" data-id="${p.id}">Delete</button></div></div></div>`}).join('')}</div>`:`<div class="card empty"><div class="big">🧾</div>No payments in this period</div>`}`;
+  }
+  const fi=active().map(s=>({s,f:feeInfo(s)}));
+  const order={overdue:0,due:1,soon:2,pending:3,paid:4,noplan:5};
+  const F={attention:x=>needsAttention(x.f),overdue:x=>x.f.status==='overdue',paid:x=>x.f.status==='paid',noplan:x=>x.f.status==='noplan',all:()=>true};
+  const list=fi.filter(F[UI.feeFilter]||F.all).sort((a,b)=>order[a.f.status]-order[b.f.status]||(a.f.due||'').localeCompare(b.f.due||''));
+  const cnt=k=>fi.filter(F[k]).length;
+  return `${head}<div class="ctrl scrollx"><div class="seg">${[['attention','Need reminder'],['overdue','Overdue'],['paid','Paid'],['noplan','No plan'],['all','All']].map(([k,l])=>`<button class="${UI.feeFilter===k?'on':''}" data-act="setUI" data-k="feeFilter" data-v="${k}">${l} ${cnt(k)}</button>`).join('')}</div></div>
+   ${UI.feeFilter==='attention'&&list.length?`<p class="hint" style="margin:-4px 0 12px">Tap <b>Remind</b> — WhatsApp opens with the message ready, just press send. Go down the list one by one.</p>`:''}
+   ${list.length?`<div class="list">${list.map(({s,f})=>feeRow(s,f)).join('')}</div>`:`<div class="card empty"><div class="big">🎉</div>Nothing here</div>`}`;
+};
+
+V.attendance=()=>{
+  const d=UI.attDate,doc=S.att[d]||{},pr=doc.present||{};
+  const list=active().filter(s=>(s.sport||'cricket')===UI.attSport&&(!UI.attBatch||s.batch===UI.attBatch)).sort((a,b)=>String(a.name).localeCompare(b.name));
+  const p=list.filter(s=>pr[s.id]===true).length,a=list.filter(s=>pr[s.id]===false).length;
+  return `${modeNotice()}<div class="ph"><div><h1>Attendance</h1><div class="meta">Tap P or A for each student</div></div></div>
+   <div class="ctrl"><input type="date" data-f="attDate" value="${esc(d)}" max="${today()}">
+    ${S.settings.sports.length>1?`<select data-f="attSport">${opt(sportOpts(),UI.attSport)}</select>`:''}
+    <select data-f="attBatch">${opt(batchOpts(),UI.attBatch)}</select></div>
+   <div class="card"><div class="row between"><div><b style="font-size:16px">${fmtD(d)}</b><div class="meta">${list.length} students</div></div><button class="btn sm" data-act="allPresent">Mark all present</button></div>
+    <div class="attsum"><div><b style="color:var(--em3)">${p}</b>Present</div><div><b style="color:var(--red)">${a}</b>Absent</div><div><b>${list.length-p-a}</b>Not marked</div></div></div>
+   ${list.length?`<div class="list">${list.map(s=>`<div class="item">${av(s.name)}<div class="grow"><div class="nm">${esc(s.name)}</div><div class="meta">${esc(s.batch||'')}${s.role?' · '+esc(s.role):''}</div></div>
+    <div class="att"><button class="p ${pr[s.id]===true?'on':''}" data-act="mark" data-id="${s.id}" data-v="1">P</button><button class="a ${pr[s.id]===false?'on':''}" data-act="mark" data-id="${s.id}" data-v="0">A</button></div></div>`).join('')}</div>`:`<div class="card empty"><div class="big">✅</div>No active students in this batch</div>`}`;
+};
+
+V.performance=()=>{
+  const sp=UI.perfSport,cr=sp==='cricket';
+  const g={};S.perf.filter(p=>(p.sport||'cricket')===sp).forEach(p=>{const k=p.grp||p.id;(g[k]=g[k]||{k,date:p.date,title:p.title,kind:p.kind,rows:[]}).rows.push(p)});
+  const groups=Object.values(g).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,40);
+  const rg={};S.ratings.filter(r=>(r.sport||'cricket')===sp).forEach(r=>{const k=r.grp||r.id;(rg[k]=rg[k]||{k,date:r.date,rows:[]}).rows.push(r)});
+  const rgs=Object.values(rg).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,20);
+  return `${modeNotice()}<div class="ph"><div><h1>Performance</h1><div class="meta">Match scores & coach ratings</div></div></div>
+   <div class="ctrl">${S.settings.sports.length>1?`<select data-f="perfSport">${opt(sportOpts(),sp)}</select>`:''}
+    <button class="btn" data-act="perfForm">${ic('bat','sm')} Add ${cr?'match scores':'scores'}</button>
+    <button class="btn gold" data-act="rateForm">${ic('star','sm')} Coach ratings</button></div>
+   <div class="card"><h3>${cr?'Matches & practice':'Score sessions'}</h3>
+   ${groups.length?`<div class="list">${groups.map(G=>{let sub='';if(cr){const ts=[...G.rows].sort((a,b)=>num(b.runs)-num(a.runs))[0],tw=[...G.rows].sort((a,b)=>num(b.wkts)-num(a.wkts))[0];sub=`🏏 ${esc(stu(ts.studentId)?.name||'—')} ${num(ts.runs)}${num(ts.balls)?' ('+num(ts.balls)+')':''}${tw&&num(tw.wkts)?` · 🎯 ${esc(stu(tw.studentId)?.name||'—')} ${num(tw.wkts)}/${num(tw.rg)}`:''}`}else{const ts=[...G.rows].sort((a,b)=>num(b.score)-num(a.score))[0];sub=`Top: ${esc(stu(ts.studentId)?.name||'—')} ${num(ts.score)}`}
+     return `<div class="item"><div class="av" style="background:linear-gradient(145deg,#2f6fc4,#1d4a8a)">${ic('bat')}</div><div class="grow"><div class="nm">${esc(G.title||G.kind||'Session')}</div><div class="meta">${fmtD(G.date)} · ${esc(G.kind||'')} · ${G.rows.length} players</div><div class="meta">${sub}</div></div>
+      <div class="row" style="flex-wrap:nowrap"><button class="btn ghost xs" data-act="viewGrp" data-k="${esc(G.k)}">View</button><button class="btn ghost xs" data-act="delGrp" data-k="${esc(G.k)}">Delete</button></div></div>`}).join('')}</div>`:`<div class="empty">No scores yet. Tap “Add match scores” after a match or practice.</div>`}</div>
+   <div class="card"><h3>Coach rating sessions</h3>
+   ${rgs.length?`<div class="list">${rgs.map(G=>`<div class="item"><div class="av" style="background:linear-gradient(145deg,#e3bb66,#c3913a);color:#2a1d05">${ic('star')}</div><div class="grow"><div class="nm">Ratings · ${fmtD(G.date)}</div><div class="meta">${G.rows.length} students · avg ${(G.rows.reduce((t,r)=>t+num(r.avg),0)/G.rows.length).toFixed(1)}/10</div></div><button class="btn ghost xs" data-act="delRate" data-k="${esc(G.k)}">Delete</button></div>`).join('')}</div>`:`<div class="empty">No coach ratings yet.</div>`}</div>`;
+};
+
+V.rankings=()=>{
+  const sp=UI.rkSport,cr=sp==='cricket',rows=rankings(sp,UI.rkBatch,UI.rkPeriod),w=S.settings.weights;
+  const pod=rows.filter(r=>r.total>0).slice(0,3);
+  const podHtml=pod.length===3?`<div class="podium">${[pod[1],pod[0],pod[2]].map((r,i)=>`<div class="pod ${i===1?'p1':''}" data-act="profile" data-id="${r.s.id}">${i===1?`<div class="av">${esc(initials(r.s.name))}</div>`:av(r.s.name)}<div>${medal(r.rank)}</div><b>${esc(r.s.name)}</b><div class="sc">${r.total.toFixed(1)}</div></div>`).join('')}</div>`:'';
+  return `${modeNotice()}<div class="ph"><div><h1>Rankings</h1><div class="meta">Score out of 100</div></div></div>
+   <div class="ctrl">${S.settings.sports.length>1?`<select data-f="rkSport">${opt(sportOpts(),sp)}</select>`:''}<select data-f="rkBatch">${opt(batchOpts(),UI.rkBatch)}</select>
+    <select data-f="rkPeriod">${opt([['30','Last 30 days'],['90','Last 90 days'],['180','Last 6 months'],['365','Last 1 year'],['all','All time']],UI.rkPeriod)}</select></div>
+   ${podHtml}
+   ${rows.length?`<div class="card tw" style="padding:6px 8px"><table><thead><tr><th>#</th><th>Player</th>${cr?'<th>Bat</th><th>Bowl+Fld</th>':'<th>Perf</th>'}<th>Coach</th><th>Attend</th><th>Score</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr class="click" data-act="profile" data-id="${r.s.id}"><td class="rk">${medal(r.rank)}</td><td><b>${esc(r.s.name)}</b><div class="meta">${esc(r.s.batch||'')}${r.s.role?' · '+esc(r.s.role):''}</div></td>
+     <td>${r.aN.toFixed(0)}</td>${cr?`<td>${r.bN.toFixed(0)}</td>`:''}<td>${r.rated?r.coach.toFixed(0):'—'}</td><td>${r.mk?r.att.toFixed(0)+'%':'—'}</td>
+     <td><div class="row" style="flex-wrap:nowrap"><div class="bar" style="width:64px"><i style="width:${r.total.toFixed(0)}%"></i></div><b>${r.total.toFixed(1)}</b></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="card empty"><div class="big">🏆</div>No active students for this batch</div>`}
+   <p class="hint">Score = ${cr?`Batting ${w.perf1}% + Bowling & fielding ${w.perf2}%`:`Performance ${num(w.perf1)+num(w.perf2)}%`} + Coach rating ${w.coach}% + Attendance ${w.att}%. Batting and bowling are compared with the best player in this list. Change weights in Settings.</p>`;
+};
+
+V.settings=()=>{
+  const st=S.settings,w=st.weights;
+  const modeTxt={claude:'Saved online in Claude — syncs on all your devices.',firebase:'Saved online in Firebase — syncs on all your devices.',local:'Saved on this device only (browser storage).',none:'Not connected'}[MODE.kind];
+  const nextApr=P(today()).getMonth()>=3?(P(today()).getFullYear()+1)+'-04-01':P(today()).getFullYear()+'-04-01';
+  const acCard=MODE.kind==='firebase'?`<div class="card"><h3>Your account</h3><p style="margin:0 0 10px">Signed in as <b>${esc(myEmail())}</b></p><p class="hint" style="margin:0 0 12px">This academy's data belongs only to this login. Other academies using the app have their own logins and can never see your data.</p><button class="btn ghost sm" data-act="signOut">${ic('out','sm')} Sign out</button></div>`:'';
+  return `<div class="ph"><div><h1>Settings</h1><div class="meta">Academy, fees, sports & data</div></div></div>
+  ${acCard}
+  <form class="card" data-form="settings"><h3>Academy details</h3><div class="grid2">
+   ${inp('name','Academy name',st.name)}${inp('phone','Academy WhatsApp / phone',st.phone,'tel')}
+   ${inp('upi','UPI ID (shown in reminders)',st.upi,'text','placeholder="academy@upi"')}${inp('address','Address',st.address)}
+   ${inp('remindDays','Remind how many days before due date',st.remindDays,'number','min="0" max="30"')}
+   ${inp('batches','Batches (comma separated)',st.batches.join(', '),'text','placeholder="Morning, Evening, Under-12"')}
+   ${inp('admissionFee','Default admission fee ₹',st.admissionFee,'number','min="0"')}${inp('kitFee','Default kit fee ₹',st.kitFee,'number','min="0"')}
+   <label class="full">WhatsApp fee reminder message<textarea name="reminderTpl" rows="6">${esc(st.reminderTpl)}</textarea><span class="hint">Fill-ins: {name} {parent} {amount} {status} {due_date} {plan} {academy} {upi} {phone}. A line whose fill-in is blank is skipped.</span></label>
+   <label class="full">WhatsApp payment receipt message<textarea name="receiptTpl" rows="5">${esc(st.receiptTpl)}</textarea><span class="hint">Fill-ins: {name} {parent} {amount} {type} {mode} {date} {next_due} {academy}</span></label>
+   <div class="full"><b style="font-size:13px">Ranking weights (%)</b><div class="wbox" style="margin-top:6px">${inp('w1','Batting / performance',w.perf1,'number','min="0"')}${inp('w2','Bowling & fielding',w.perf2,'number','min="0"')}${inp('w3','Coach rating',w.coach,'number','min="0"')}${inp('w4','Attendance',w.att,'number','min="0"')}</div></div>
+   <div class="full actions"><button class="btn">Save settings</button></div></div></form>
+  <div class="card"><div class="row between" style="margin-bottom:12px"><h3 style="margin:0">Fee plans</h3><button class="btn sm" data-act="planForm">${ic('plus','sm')} Add plan</button></div>
+   ${S.plans.length?`<div class="list">${[...S.plans].sort((a,b)=>num(a.months)-num(b.months)).map(p=>`<div class="item">${`<div class="av" style="background:linear-gradient(145deg,#e3bb66,#c3913a);color:#2a1d05">₹</div>`}<div class="grow"><div class="nm">${esc(p.name)}</div><div class="meta">${esc(sportOf(p.sport||'cricket').name)} · every ${num(p.months)} month${num(p.months)>1?'s':''} · ${S.students.filter(s=>s.planId===p.id).length} students</div></div><div style="text-align:right"><div class="amt">${money(pAmt(p,today()))}</div>${num(p.newAmount)>0&&p.newFrom&&today()<p.newFrom?`<div class="meta" style="font-weight:700;color:var(--amb)">→ ${money(p.newAmount)} from ${fmtD(p.newFrom)}</div>`:''}</div><button class="btn ghost xs" data-act="planForm" data-id="${p.id}">Edit</button></div>`).join('')}</div>`:`<div class="empty">No fee plans yet — add Monthly, Quarterly, Yearly etc.</div>`}
+   ${S.plans.length?`<form data-form="raise" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><div class="row" style="gap:6px">${ic('up','sm')}<b style="font-size:14.5px">Increase all fees from a date</b></div><p class="hint" style="margin:4px 0 10px">Example: +10% from 1 April. Until that date the old fee is used, after it the new fee is charged automatically.</p>
+    <div class="grid2">${sel('how','Increase by',[['pct','Percent (%)'],['rs','Fixed amount (₹)']],'pct')}${inp('by','How much','10','number','min="0" step="any"')}${inp('from','New fee starts from',nextApr,'date')}<div class="actions" style="align-items:flex-end"><button class="btn ghost">Preview & apply</button></div></div></form>`:''}</div>
+  <div class="card"><h3>Sports</h3><div>${st.sports.map(x=>`<span class="pill">${esc(x.name)} <span class="meta">(${esc(x.skills.join(', '))})</span>${x.id!=='cricket'?`<button data-act="delSport" data-id="${esc(x.id)}" title="Remove">✕</button>`:''}</span>`).join('')}</div>
+   <form data-form="sport" class="grid2" style="margin-top:10px">${inp('sname','New sport name','','text','placeholder="Football"')}${inp('skills','Coach rating skills (comma separated)','','text','placeholder="Passing, Shooting, Fitness, Discipline"')}<div class="full actions"><button class="btn ghost sm">${ic('plus','sm')} Add sport</button></div></form>
+   <p class="hint">Cricket has full batting/bowling stats. Other sports use a score per session plus coach ratings and attendance.</p></div>
+  <div class="card"><h3>Data & backup</h3><p style="margin:0 0 12px;font-weight:600">${modeTxt}</p>
+   <div class="row"><button class="btn ghost sm" data-act="backup">📋 Copy backup</button><button class="btn ghost sm" data-act="importOpen">📥 Import backup</button></div>
+   <p class="hint">Copy backup puts all data on your clipboard — paste it in a note or WhatsApp to yourself. Import moves data from another device or version.</p></div>`;
+};
+
+/* ============ modals ============ */
+function studentForm(s){
+  s=s||{};const st=S.settings,isNew=!s.id;
+  return `<div class="mh"><h2>${isNew?'Add student':'Edit student'}</h2>${xbtn}</div>
+  <form data-form="student" data-id="${esc(s.id||'')}" class="grid2">
+   ${inp('name','Student name *',s.name,'text','required autocomplete="off"')}${inp('parent','Parent / guardian name',s.parent)}
+   ${inp('phone','Parent WhatsApp number *',s.phone,'tel','required inputmode="tel" placeholder="98XXXXXXXX"')}${inp('phone2','Alternate number',s.phone2,'tel','inputmode="tel"')}
+   ${inp('dob','Date of birth',s.dob,'date')}${sel('gender','Gender',['','Male','Female','Other'],s.gender)}
+   ${S.settings.sports.length>1?sel('sport','Sport',sportOpts(),s.sport||'cricket'):`<input type="hidden" name="sport" value="${esc(s.sport||'cricket')}">`}${sel('batch','Batch',['',...st.batches],s.batch)}
+   ${sel('role','Playing role (cricket)',['',...ROLES],s.role)}${sel('batStyle','Batting style',['',...BAT],s.batStyle)}
+   ${sel('bowlStyle','Bowling style',['',...BOWL],s.bowlStyle)}${inp('joinDate','Joining date',s.joinDate||today(),'date')}
+   ${sel('planId','Fee plan',[['','— No plan —'],...S.plans.map(p=>[p.id,`${p.name} · ${money(pAmt(p,today()))}`])],s.planId)}
+   ${inp('nextDue',isNew?'First fee due date':'Next fee due date',s.nextDue||today(),'date')}
+   ${inp('admissionFee','Admission fee ₹',s.admissionFee??(isNew?st.admissionFee:0),'number','min="0"')}${inp('kitFee','Kit fee ₹',s.kitFee??(isNew?st.kitFee:0),'number','min="0"')}
+   ${!isNew?`<div class="full row" style="gap:16px"><label class="chk"><input type="checkbox" name="admissionPaid" ${s.admissionPaid?'checked':''}> Admission fee paid</label><label class="chk"><input type="checkbox" name="kitPaid" ${s.kitPaid?'checked':''}> Kit fee paid</label></div>`:''}
+   ${sel('status','Status',[['active','Active'],['inactive','Left / Inactive']],s.status||'active')}${inp('address','Address',s.address)}
+   <label class="full">Notes<textarea name="notes" rows="2">${esc(s.notes)}</textarea></label>
+   ${isNew?`<div class="full paybox"><b style="font-size:13.5px;width:100%">Payment received now?</b><label class="chk"><input type="checkbox" name="payPlan"> First plan fee</label><label class="chk"><input type="checkbox" name="payAdm"> Admission fee</label><label class="chk"><input type="checkbox" name="payKit"> Kit fee</label><label style="flex-direction:row;align-items:center;gap:8px">Mode <select name="payMode" style="width:auto;min-height:38px;padding:6px 30px 6px 10px">${opt(MODES,'Cash')}</select></label><label style="flex-direction:row;align-items:center;gap:8px">Paid on <input type="date" name="payDate" value="${today()}" max="${today()}" style="width:auto;min-height:38px;padding:6px 10px"></label><span class="hint" style="width:100%">Old student who already paid? Set the <b>First fee due date</b> to when their fee period started and <b>Paid on</b> to the day they paid.</span></div>`:''}
+   <div class="full actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save student</button></div></form>`;
+}
+function profileHtml(id){
+  const s=stu(id);if(!s)return `<div class="mh"><h2>Student not found</h2>${xbtn}</div>`;
+  const f=feeInfo(s),sp=sportOf(s.sport||'cricket'),cr=sp.id==='cricket';
+  const pays=S.payments.filter(p=>p.studentId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const since30=addDays(today(),-30);let mk=0,pr=0,mkA=0,prA=0;
+  Object.entries(S.att).forEach(([d,doc])=>{const v=doc.present&&doc.present[id];if(v===true||v===false){mkA++;if(v)prA++;if(d>=since30){mk++;if(v)pr++}}});
+  const rk=s.status!=='inactive'?rankings(sp.id,'','90'):[];const me=rk.find(r=>r.s.id===id);
+  const rts=S.ratings.filter(r=>r.studentId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));const lr=rts[0];
+  const chat=waLink(s.phone,'');
+  let perf='';
+  if(cr){const c=cricketStats(id);perf=`<div class="stats">${[['Games',c.games],['Runs',c.runs],['High score',c.hs],['Average',c.avg.toFixed(1)],['Strike rate',c.sr.toFixed(0)],['4s / 6s',c.f4+' / '+c.x6],['Wickets',c.wk],['Overs',showOvers(c.bb)],['Economy',c.econ.toFixed(2)],['Best',c.best?c.best.w+'/'+c.best.r:'—'],['Catches',c.ct],['Run outs',c.ro]].map(([l,v])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('')}</div>`}
+  else{const pf=S.perf.filter(p=>p.studentId===id);perf=`<div class="stats"><div class="stat"><b>${pf.length}</b><span>Sessions</span></div><div class="stat"><b>${sum(pf,'score')}</b><span>Total score</span></div><div class="stat"><b>${pf.length?(sum(pf,'score')/pf.length).toFixed(1):0}</b><span>Avg score</span></div></div>`}
+  return `<div class="mh"><div class="prof" style="min-width:0">${av(s.name)}<div style="min-width:0"><h2>${esc(s.name)}</h2><div class="meta">${esc(sp.name)}${s.batch?' · '+esc(s.batch):''}${s.role?' · '+esc(s.role):''}${s.status==='inactive'?' · Inactive':''}</div>${me?`<span class="badge b-gold" style="margin-top:4px">🏆 Rank ${me.rank} of ${rk.length} · ${me.total.toFixed(1)}</span>`:''}</div></div>${xbtn}</div>
+  <div class="row" style="margin-bottom:14px">${chat?`<a class="btn wa sm" href="${esc(chat)}" target="_blank" rel="noopener">${ic('wa','sm')} WhatsApp</a>`:''}${needsAttention(f)?remindBtn(s,f):''}<button class="btn sm" data-act="pay" data-id="${id}">₹ Payment</button><button class="btn ghost sm" data-act="editStudent" data-id="${id}">${ic('edit','sm')} Edit</button><button class="btn ghost sm" data-act="delStudent" data-id="${id}">Delete</button></div>
+  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><div class="row between"><h3 style="margin:0">Fees</h3>${feeBadge(f)}</div>
+   <div class="kv" style="margin-top:12px"><div><span>Plan</span>${esc(f.plan?f.plan.name+' · '+planPrice(f.plan):'No plan')}</div><div><span>Next due</span>${fmtD(f.due)}</div><div><span>Due now</span><b>${money(f.amount)}</b></div><div><span>Admission / Kit</span>${num(s.admissionFee)?(s.admissionPaid?'✅':'⏳')+' '+money(s.admissionFee):'—'} / ${num(s.kitFee)?(s.kitPaid?'✅':'⏳')+' '+money(s.kitFee):'—'}</div></div>
+   ${pays.length?`<div class="tw" style="margin-top:12px"><table><thead><tr><th>Date</th><th>For</th><th>Mode</th><th>Amount</th></tr></thead><tbody>${pays.slice(0,12).map(p=>`<tr><td>${fmtD(p.date)}</td><td>${esc(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' ×'+p.periods:''):KINDS[p.kind]||p.kind)}</td><td>${esc(p.mode||'')}</td><td><b>${money(p.amount)}</b></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">No payments yet.</p>'}</div>
+  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><h3>Performance</h3>${perf}
+   <div class="kv" style="margin-top:14px"><div><span>Attendance 30 days</span>${mk?Math.round(pr/mk*100)+'% ('+pr+'/'+mk+')':'—'}</div><div><span>Attendance all time</span>${mkA?Math.round(prA/mkA*100)+'% ('+prA+'/'+mkA+')':'—'}</div>
+   <div><span>Latest coach rating</span>${lr?num(lr.avg).toFixed(1)+'/10 · '+fmtD(lr.date):'—'}</div></div>
+   ${lr?`<div style="margin-top:10px">${Object.entries(lr.skills||{}).map(([k,v])=>`<span class="pill">${esc(k)} <b>${v}</b></span>`).join('')}</div>`:''}</div>
+  <div class="card" style="box-shadow:none;border:1px solid var(--line)"><h3>Details</h3><div class="kv">${[['Parent',s.parent],['WhatsApp',s.phone],['Alternate',s.phone2],['Date of birth',s.dob?fmtD(s.dob):''],['Gender',s.gender],['Joined',s.joinDate?fmtD(s.joinDate):''],['Batting',s.batStyle],['Bowling',s.bowlStyle],['Address',s.address]].filter(x=>x[1]).map(([l,v])=>`<div><span>${l}</span>${esc(v)}</div>`).join('')}</div>${s.notes?`<p style="margin:12px 0 0">${esc(s.notes)}</p>`:''}</div>`;
+}
+function openProfile(id){openModal(profileHtml(id),{type:'profile',id})}
+function payForm(sid,kind){
+  const act=active().sort((a,b)=>String(a.name).localeCompare(b.name));
+  const s=sid?stu(sid):null,f=s?feeInfo(s):null,pl=s?plan(s.planId):null;
+  const kinds=[];if(pl)kinds.push(['plan',`Plan fee — ${pl.name} (${money(pAmt(pl,s.nextDue||today()))})`]);
+  if(s&&num(s.admissionFee)>0&&!s.admissionPaid)kinds.push(['admission',`Admission fee (${money(s.admissionFee)})`]);
+  if(s&&num(s.kitFee)>0&&!s.kitPaid)kinds.push(['kit',`Kit fee (${money(s.kitFee)})`]);
+  kinds.push(['other','Other']);
+  if(!kind)kind=pl&&f&&['overdue','due','soon','paid'].includes(f.status)?'plan':kinds[0][0];
+  const periods=kind==='plan'&&f?Math.max(1,f.periods):1;
+  const amt=calcAmt(s,kind,periods);
+  const from=s?(s.nextDue||s.joinDate||today()):today();
+  return `<div class="mh"><h2>Record payment</h2>${xbtn}</div>
+  <form data-form="payment" class="grid2">
+   <label class="full">Student<select name="studentId" data-pf="1" required><option value="">— Select student —</option>${act.map(x=>`<option value="${x.id}" ${x.id===sid?'selected':''}>${esc(x.name)}${x.batch?' · '+esc(x.batch):''}</option>`).join('')}</select></label>
+   ${s?`${sel('kind','Payment for',kinds,kind,'data-pf="1"')}
+   ${kind==='plan'?`${sel('periods',`How many ${pl&&num(pl.months)>1?num(pl.months)+'-month periods':'months'}`,Array.from({length:12},(_,i)=>[i+1,String(i+1)]),periods,'data-pf="1"')}
+    <p class="full hint" style="margin:0" id="covers">Covers ${fmtD(from)} → ${fmtD(addMonths(from,num(pl.months)*periods))}. Next due date becomes <b>${fmtD(addMonths(from,num(pl.months)*periods))}</b>.</p>`:''}
+   ${inp('amount','Amount received ₹',amt,'number','min="1" required id="payAmt" inputmode="numeric"')}${inp('date','Payment date (old date allowed)',today(),'date',`max="${today()}"`)}
+   ${sel('mode','Mode',MODES,'Cash')}${inp('note','Note (optional)','','text','placeholder="UPI ref no., etc."')}
+   <div class="full actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save payment</button></div>`:'<p class="full hint">Choose a student first.</p>'}
+  </form>`;
+}
+function calcAmt(s,kind,periods){if(!s)return '';const pl=plan(s.planId);if(kind==='plan'&&pl){let d=s.nextDue||s.joinDate||today(),t=0;for(let i=0;i<periods;i++){t+=pAmt(pl,d);d=addMonths(d,num(pl.months)||1)}return t}if(kind==='admission')return num(s.admissionFee);if(kind==='kit')return num(s.kitFee);return ''}
+function perfForm(){
+  const sp=UI.perfSport,cr=sp==='cricket',spn=sportOf(sp).name;
+  const list=active().filter(s=>(s.sport||'cricket')===sp&&(!UI.pBatch||s.batch===UI.pBatch)).sort((a,b)=>String(a.name).localeCompare(b.name));
+  const head=cr?'<th>Player</th><th>Runs</th><th>Balls</th><th>4s</th><th>6s</th><th>Out</th><th>Overs</th><th>Runs given</th><th>Wkts</th><th>Catch</th><th>Run out</th>':'<th>Player</th><th>Score</th><th>Note</th>';
+  const ni=(id,k,w)=>`<input name="${k}_${id}" inputmode="${k==='ov'?'decimal':k==='note'?'text':'numeric'}" ${w?'class="w"':''} ${k==='ov'?'placeholder="3.4"':''}>`;
+  return `<div class="mh"><h2>Add ${esc(spn)} scores</h2>${xbtn}</div>
+  <form data-form="perf"><div class="grid2" style="margin-bottom:10px">
+   ${inp('date','Date',UI.pDate,'date','data-mf="pDate"')}${sel('kind','Type',['Match','Practice','Net session','Tournament'],UI.pKind,'data-mf="pKind"')}
+   ${inp('title','Match / session name',UI.pTitle,'text','data-mf="pTitle" placeholder="vs City XI"')}${sel('batch','Batch',batchOpts(),UI.pBatch,'data-mf="pBatch"')}</div>
+   <p class="hint">Fill only the players who played. Leave others empty.${cr?' Overs like 3.4 = 3 overs 4 balls. Swipe the table sideways for bowling.':''}</p>
+   ${list.length?`<div class="tw"><table class="bulk"><thead><tr>${head}</tr></thead><tbody>${list.map(s=>{const c=ks=>ks.map(k=>`<td>${ni(s.id,k)}</td>`).join('');return `<tr><td><b>${esc(s.name)}</b></td>${cr?c(['runs','balls','fours','sixes'])+`<td><input type="checkbox" name="out_${s.id}" style="width:22px;height:22px;accent-color:#17805a"></td>`+c(['ov','rg','wkts','ct','ro']):`<td>${ni(s.id,'score')}</td><td>${ni(s.id,'note',1)}</td>`}</tr>`}).join('')}</tbody></table></div>
+   <div class="actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save scores</button></div>`:'<div class="empty">No active students in this batch.</div>'}</form>`;
+}
+function rateForm(){
+  const sp=UI.perfSport,skills=sportOf(sp).skills;
+  const list=active().filter(s=>(s.sport||'cricket')===sp&&(!UI.pBatch||s.batch===UI.pBatch)).sort((a,b)=>String(a.name).localeCompare(b.name));
+  return `<div class="mh"><h2>Coach ratings (1–10)</h2>${xbtn}</div>
+  <form data-form="rate"><div class="grid2" style="margin-bottom:10px">${inp('date','Date',UI.pDate,'date','data-mf="pDate"')}${sel('batch','Batch',batchOpts(),UI.pBatch,'data-mf="pBatch"')}</div>
+   <p class="hint">Give marks 1–10 for each skill. Leave a student blank to skip.</p>
+   ${list.length?`<div class="tw"><table class="bulk"><thead><tr><th>Player</th>${skills.map(k=>`<th>${esc(k)}</th>`).join('')}</tr></thead><tbody>${list.map(s=>`<tr><td><b>${esc(s.name)}</b></td>${skills.map((k,i)=>`<td><input name="r${i}_${s.id}" type="number" min="1" max="10" inputmode="numeric"></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+   <div class="actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save ratings</button></div>`:'<div class="empty">No active students in this batch.</div>'}</form>`;
+}
+function planForm(p){
+  p=p||{};
+  return `<div class="mh"><h2>${p.id?'Edit':'Add'} fee plan</h2>${xbtn}</div>
+  <form data-form="plan" data-id="${esc(p.id||'')}" class="grid2">
+   ${inp('name','Plan name',p.name,'text','required placeholder="Quarterly"')}${S.settings.sports.length>1?sel('sport','Sport',sportOpts(),p.sport||'cricket'):`<input type="hidden" name="sport" value="${esc(p.sport||'cricket')}">`}
+   ${sel('months','Fee every',[[1,'1 month (Monthly)'],[3,'3 months (Quarterly)'],[6,'6 months (Half-yearly)'],[12,'12 months (Yearly)']],p.months||1)}${inp('amount','Current fee ₹',p.amount,'number','min="1" required inputmode="numeric"')}
+   <div class="full paybox" style="display:block"><div class="row" style="gap:6px">${ic('up','sm')}<b style="font-size:13.5px">Fee increase (optional)</b></div><p class="hint" style="margin:3px 0 10px">Set next year's fee now. It is charged automatically for fees due on or after this date.</p><div class="grid2">${inp('newAmount','New fee ₹',num(p.newAmount)||'','number','min="0" placeholder="e.g. 5000" inputmode="numeric"')}${inp('newFrom','Starts from',p.newFrom||'','date')}</div></div>
+   <div class="full actions">${p.id?`<button class="btn red" type="button" data-act="delPlan" data-id="${p.id}" style="margin-right:auto">Delete</button>`:''}<button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save plan</button></div></form>`;
+}
+function grpView(k){
+  const rows=S.perf.filter(p=>(p.grp||p.id)===k);if(!rows.length)return `<div class="mh"><h2>Not found</h2>${xbtn}</div>`;
+  const r0=rows[0],cr=(r0.sport||'cricket')==='cricket';
+  return `<div class="mh"><div><h2>${esc(r0.title||r0.kind||'Session')}</h2><div class="meta">${fmtD(r0.date)} · ${esc(r0.kind||'')}</div></div>${xbtn}</div>
+  <div class="tw"><table><thead><tr><th>Player</th>${cr?'<th>Batting</th><th>SR</th><th>4s/6s</th><th>Bowling</th><th>Field</th>':'<th>Score</th><th>Note</th>'}</tr></thead><tbody>
+  ${rows.sort((a,b)=>num(b.runs||b.score)-num(a.runs||a.score)).map(p=>`<tr><td><b>${esc(stu(p.studentId)?.name||'—')}</b></td>${cr?`<td>${num(p.runs)}${p.out?'':'*'} (${num(p.balls)})</td><td>${num(p.balls)?(num(p.runs)/num(p.balls)*100).toFixed(0):'—'}</td><td>${num(p.fours)}/${num(p.sixes)}</td><td>${num(p.bb)?showOvers(num(p.bb))+'-'+num(p.rg)+'-'+num(p.wkts):'—'}</td><td>${num(p.ct)?num(p.ct)+'c ':''}${num(p.ro)?num(p.ro)+'ro':''}</td>`:`<td>${num(p.score)}</td><td>${esc(p.note||'')}</td>`}</tr>`).join('')}</tbody></table></div><p class="hint">* = not out · Bowling = overs-runs-wickets</p>`;
+}
+
+/* ============ render ============ */
+function render(){
+  const a=document.activeElement,inView=a&&$('#view').contains(a),aid=inView?a.id:null;let pos=null;try{pos=inView?a.selectionStart:null}catch(e){}
+  const nm=S.settings.name||'Sports Academy';$('#acName').textContent=nm;$('#sName').textContent=nm;document.title=nm+' · Manager';
+  $('#sfoot').textContent={claude:'Synced online',firebase:'Synced with Firebase',local:'Saved on this device',none:''}[MODE.kind]||'';
+  renderTabs();$('#view').innerHTML=(V[UI.tab]||V.home)();
+  if(aid){const n=document.getElementById(aid);if(n){n.focus();try{if(pos!=null)n.setSelectionRange(pos,pos)}catch(e){}}}
+  if(UI.modal&&UI.modal.type==='profile'){const sh=$('#sheet'),t=sh.scrollTop;sh.innerHTML=profileHtml(UI.modal.id);sh.scrollTop=t}
+}
+
+/* ============ actions ============ */
+const A={
+  tab:d=>{UI.tab=d.t;closeModal();render();window.scrollTo(0,0)},
+  more:()=>openModal(`<div class="mh"><h2>More</h2>${xbtn}</div><div class="more">${[['performance','chart','Performance','Match scores & coach ratings'],['rankings','trophy','Rankings','Who is the best player'],['settings','gear','Settings','Academy, fee plans, sports, backup']].map(([k,i,l,s])=>`<button data-act="tab" data-t="${k}"><i>${ic(i)}</i><div><div>${l}</div><div class="meta">${s}</div></div></button>`).join('')}${canInstall()?`<button data-act="install"><i><img src="icons/icon-192.png" style="width:30px;height:30px;border-radius:8px"></i><div><div>Install app</div><div class="meta">Add to your home screen</div></div></button>`:''}</div>`),
+  setUI:d=>{UI[d.k]=d.v;render()},
+  feeJump:d=>{UI.tab='fees';if(d.v==='payments'){UI.feeView='payments';UI.payMonth=today().slice(0,7)}else{UI.feeView='due';UI.feeFilter=d.v}render();window.scrollTo(0,0)},
+  quickScores:()=>{UI.tab='performance';render();A.perfForm()},
+  close:()=>closeModal(),
+  cno:()=>{$('#confirm').classList.add('hidden');confirmCb=null},
+  cyes:()=>{$('#confirm').classList.add('hidden');const c=confirmCb;confirmCb=null;c&&c()},
+  addStudent:()=>openModal(studentForm()),
+  editStudent:d=>openModal(studentForm(stu(d.id))),
+  profile:d=>openProfile(d.id),
+  _unusedEditName:()=>openModal(`<div class="mh"><h2>Academy name</h2>${xbtn}</div><form data-form="acname" class="grid2"><label class="full">Name shown in the app and in WhatsApp messages<input name="name" value="${esc(S.settings.name)}" required></label><div class="full actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save</button></div></form>`),
+  delStudent:d=>{const s=stu(d.id);ask(`Delete <b>${esc(s.name)}</b>? Their payment history is kept. Tip: to keep records, mark them <b>Inactive</b> instead.`,'Delete student',async()=>{if(await W(()=>D('students/'+d.id).delete(),'Student deleted'))closeModal()})},
+  pay:d=>openModal(payForm(d.id||'')),
+  reminded:d=>{const s=stu(d.id);if(s&&s.lastReminded!==today())W(()=>D('students/'+d.id).update({lastReminded:today()}))},
+  delPay:d=>{const p=S.payments.find(x=>x.id===d.id);if(!p)return;const s=stu(p.studentId);
+    ask(`Delete payment of <b>${money(p.amount)}</b>${s?' from '+esc(s.name):''}?${p.kind==='plan'&&s&&s.nextDue===p.coversTo?' The next due date will go back to '+fmtD(p.coversFrom)+'.':''}`,'Delete payment',async()=>{
+      await W(async()=>{await D('payments/'+p.id).delete();if(s){if(p.kind==='plan'&&s.nextDue===p.coversTo&&p.coversFrom)await D('students/'+s.id).update({nextDue:p.coversFrom});if(p.kind==='admission')await D('students/'+s.id).update({admissionPaid:false});if(p.kind==='kit')await D('students/'+s.id).update({kitPaid:false})}},'Payment deleted')})},
+  mark:d=>markAtt([d.id],d.v==='1'),
+  allPresent:()=>{const list=active().filter(s=>(s.sport||'cricket')===UI.attSport&&(!UI.attBatch||s.batch===UI.attBatch));if(list.length)markAtt(list.map(s=>s.id),true,true)},
+  perfForm:()=>openModal(perfForm(),{type:'form',wide:true,f:'perf'}),
+  rateForm:()=>openModal(rateForm(),{type:'form',wide:true,f:'rate'}),
+  viewGrp:d=>openModal(grpView(d.k),{type:'form',wide:true}),
+  delGrp:d=>{const rows=S.perf.filter(p=>(p.grp||p.id)===d.k);ask(`Delete this session's scores for ${rows.length} players?`,'Delete',async()=>{await W(async()=>{for(const r of rows)await D('perf/'+r.id).delete()},'Deleted')})},
+  delRate:d=>{const rows=S.ratings.filter(p=>(p.grp||p.id)===d.k);ask(`Delete these ${rows.length} coach ratings?`,'Delete',async()=>{await W(async()=>{for(const r of rows)await D('ratings/'+r.id).delete()},'Deleted')})},
+  planForm:d=>openModal(planForm(d.id?plan(d.id):null)),
+  delPlan:d=>{const n=S.students.filter(s=>s.planId===d.id).length;ask(`Delete this fee plan?${n?` ${n} students use it — they will show “No fee plan” until you pick a new one.`:''}`,'Delete plan',async()=>{if(await W(()=>D('plans/'+d.id).delete(),'Plan deleted'))closeModal()})},
+  delSport:d=>{const n=S.students.filter(s=>s.sport===d.id).length;if(n)return toast(`${n} students are in this sport — move them first`,'err');ask('Remove this sport?','Remove',()=>saveSettings({sports:S.settings.sports.filter(x=>x.id!==d.id)},'Sport removed'))},
+  applyRaise:async()=>{const r=UI.raise;if(!r)return;const past=r.from<=today();
+    const ok=await W(async()=>{for(const p of S.plans){const v=raiseCalc(p,r);await D('plans/'+p.id).update(past?{amount:v,newAmount:0,newFrom:''}:{newAmount:v,newFrom:r.from})}},past?'Fees updated':'Fee increase set from '+fmtD(r.from));if(ok)closeModal()},
+  backup:async()=>{const data=exportData();
+    try{await navigator.clipboard.writeText(data);toast('Backup copied — paste it somewhere safe')}catch(e){openModal(`<div class="mh"><h2>Backup</h2>${xbtn}</div><p class="hint">Select all and copy this text:</p><textarea style="width:100%;height:300px;font-size:12px;border-radius:12px;border:1px solid var(--line);padding:10px" readonly>${esc(data)}</textarea>`)}},
+  importOpen:()=>openModal(`<div class="mh"><h2>Import backup</h2>${xbtn}</div><form data-form="import" class="grid2"><label class="full">Paste the backup text here<textarea name="data" rows="10" style="font-size:12px" required></textarea></label><p class="full hint" style="margin:0">Records with the same ID are overwritten. Other data is kept.</p><div class="full actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Import</button></div></form>`),
+};
+A.signOut=()=>{if(MODE.fb)MODE.fb.U.signOut(MODE.fb.auth)};
+A.loginMode=d=>{UI.signup=d.v==='1';showLogin()};
+A.installHide=()=>{lsSet('install-hide',today());render()};
+A.install=async()=>{
+  if(deferredInstall){closeModal();deferredInstall.prompt();try{const r=await deferredInstall.userChoice;if(r&&r.outcome==='accepted')deferredInstall=null}catch(e){}render();return}
+  const safari=/safari/i.test(navigator.userAgent)&&!/crios|fxios|edgios/i.test(navigator.userAgent);
+  openModal(`<div class="mh"><h2>Install on iPhone</h2>${xbtn}</div>
+   ${safari?'':'<div class="notice red" style="margin-bottom:12px"><div><b>Open this page in Safari first.</b> iPhone only allows installing from Safari. Copy the link, open Safari, paste it.</div></div>'}
+   <div class="istep"><b class="n">1</b><div>Tap the <b>Share</b> button ${SHARE_SVG} at the bottom of Safari</div></div>
+   <div class="istep"><b class="n">2</b><div>Scroll down and tap <b>Add to Home Screen</b> ➕</div></div>
+   <div class="istep"><b class="n">3</b><div>Tap <b>Add</b> (top right). The 🏏 app icon appears on your home screen</div></div>
+   <div class="actions"><button class="btn" data-act="close">Got it</button></div>`);
+};
+const raiseCalc=(p,r)=>{const base=num(p.amount);const v=r.how==='pct'?base*(1+r.by/100):base+r.by;return Math.round(v/50)*50||Math.round(v)};
+function exportData(){return JSON.stringify({app:'sports-academy',exportedAt:new Date().toISOString(),settings:S.settings,plans:S.plans,students:S.students,payments:S.payments,perf:S.perf,ratings:S.ratings,attendance:S.att})}
+function markAtt(ids,val,force){
+  const d=UI.attDate,doc=S.att[d]||{date:d,present:{}},present={...(doc.present||{})};
+  ids.forEach(id=>{if(!force&&present[id]===val)delete present[id];else present[id]=val});
+  S.att={...S.att,[d]:{...doc,date:d,present}};render();
+  if(!db)return toast('Data not connected','err');
+  queue('att/'+d,()=>D('attendance/'+d).set({date:d,present}));
+}
+
+async function saveSettings(patch,msg){const next={...S.settings,...patch};return W(()=>D('settings/academy').set(next),msg||'Settings saved')}
+
+/* ============ forms ============ */
+const g=fd=>k=>(fd.get(k)??'').toString().trim();
+const busy=(f,t)=>{const b=f.querySelector('button:not([type])');if(b){b.disabled=!!t;if(t){b.dataset.t=b.textContent;b.textContent=t}else if(b.dataset.t)b.textContent=b.dataset.t}};
+const FORMS={
+  async student(f,fd){
+    const G=g(fd),id=f.dataset.id;
+    const data={name:G('name'),parent:G('parent'),phone:G('phone'),phone2:G('phone2'),dob:G('dob'),gender:G('gender'),sport:G('sport')||'cricket',batch:G('batch'),role:G('role'),batStyle:G('batStyle'),bowlStyle:G('bowlStyle'),joinDate:G('joinDate')||today(),planId:G('planId'),nextDue:G('nextDue')||today(),admissionFee:num(G('admissionFee')),kitFee:num(G('kitFee')),status:G('status')||'active',address:G('address'),notes:G('notes')};
+    if(!data.name)return toast('Enter the student name','err');
+    if(!normPhone(data.phone))return toast('Enter a valid 10-digit WhatsApp number','err');
+    if(id){data.admissionPaid=!!fd.get('admissionPaid');data.kitPaid=!!fd.get('kitPaid');busy(f,'Saving…');if(await W(()=>D('students/'+id).update(data),'Student saved'))openProfile(id);else busy(f);return}
+    data.admissionPaid=false;data.kitPaid=false;data.createdAt=new Date().toISOString();
+    const ref=C('students').doc(),pays=[],mode=G('payMode')||'Cash',pl=plan(data.planId),base={studentId:ref.id,studentName:data.name,date:G('payDate')||today(),mode,createdAt:new Date().toISOString()};
+    if(fd.get('payPlan')&&pl){const to=addMonths(data.nextDue,num(pl.months)||1);pays.push({...base,kind:'plan',planId:pl.id,planName:pl.name,months:num(pl.months),periods:1,amount:pAmt(pl,data.nextDue),coversFrom:data.nextDue,coversTo:to});data.nextDue=to}
+    if(fd.get('payAdm')&&data.admissionFee>0){pays.push({...base,kind:'admission',amount:data.admissionFee});data.admissionPaid=true}
+    if(fd.get('payKit')&&data.kitFee>0){pays.push({...base,kind:'kit',amount:data.kitFee});data.kitPaid=true}
+    busy(f,'Saving…');
+    if(await W(async()=>{await ref.set(data);for(const p of pays)await C('payments').add(p)},'Student added'))setTimeout(()=>openProfile(ref.id),300);else busy(f);
+  },
+  async payment(f,fd){
+    const G=g(fd),s=stu(G('studentId'));if(!s)return toast('Choose a student','err');
+    const kind=G('kind'),amount=num(G('amount'));if(amount<=0)return toast('Enter the amount','err');
+    const p={studentId:s.id,studentName:s.name,kind,amount,date:G('date')||today(),mode:G('mode'),note:G('note'),createdAt:new Date().toISOString()};let upd=null;
+    if(kind==='plan'){const pl=plan(s.planId);if(!pl)return toast('This student has no fee plan','err');const periods=Math.max(1,parseInt(G('periods'))||1),from=s.nextDue||s.joinDate||today(),to=addMonths(from,(num(pl.months)||1)*periods);Object.assign(p,{planId:pl.id,planName:pl.name,months:num(pl.months),periods,coversFrom:from,coversTo:to});upd={nextDue:to}}
+    else if(kind==='admission')upd={admissionPaid:true};else if(kind==='kit')upd={kitPaid:true};
+    busy(f,'Saving…');
+    const ok=await W(async()=>{await C('payments').add(p);if(upd)await D('students/'+s.id).update(upd)});
+    if(!ok){busy(f);return}
+    const l=waLink(s.phone,receiptMsg(p,{...s,...(upd||{})}));
+    openModal(`<div class="mh"><h2>Payment saved</h2>${xbtn}</div><div style="text-align:center;padding:6px 0 10px"><div style="width:64px;height:64px;border-radius:50%;background:var(--eml);color:var(--em3);display:grid;place-items:center;margin:0 auto 12px;font-size:30px">✓</div><div style="font-size:28px;font-weight:800">${money(amount)}</div><div class="meta" style="font-size:14px">received from <b style="color:var(--ink)">${esc(s.name)}</b></div>${upd&&upd.nextDue?`<div style="margin-top:8px" class="badge b-grn">Next due ${fmtD(upd.nextDue)}</div>`:''}</div>
+     <div class="actions" style="justify-content:center">${l?`<a class="btn wa" href="${esc(l)}" target="_blank" rel="noopener">${ic('receipt','sm')} Send receipt on WhatsApp</a>`:''}<button class="btn ghost" data-act="profile" data-id="${s.id}">Open student</button><button class="btn ghost" data-act="close">Done</button></div>`);
+  },
+  async perf(f,fd){
+    const G=g(fd),sp=UI.perfSport,cr=sp==='cricket',date=G('date')||today(),grp='g'+uid();
+    const list=active().filter(s=>(s.sport||'cricket')===sp&&(!UI.pBatch||s.batch===UI.pBatch));
+    const docs=[];
+    list.forEach(s=>{const v=k=>G(k+'_'+s.id);
+      if(cr){const keys=['runs','balls','fours','sixes','ov','rg','wkts','ct','ro'];const any=keys.some(k=>v(k)!=='')||fd.get('out_'+s.id);if(!any)return;
+        docs.push({studentId:s.id,sport:sp,date,title:G('title'),kind:G('kind'),grp,runs:num(v('runs')),balls:num(v('balls')),fours:num(v('fours')),sixes:num(v('sixes')),out:!!fd.get('out_'+s.id),bb:parseOvers(v('ov')),rg:num(v('rg')),wkts:num(v('wkts')),ct:num(v('ct')),ro:num(v('ro'))})}
+      else{if(v('score')===''&&v('note')==='')return;docs.push({studentId:s.id,sport:sp,date,title:G('title'),kind:G('kind'),grp,score:num(v('score')),note:v('note')})}});
+    if(!docs.length)return toast('Enter scores for at least one player','err');
+    busy(f,'Saving…');
+    if(await W(async()=>{for(const d of docs)await C('perf').add(d)},`Saved scores for ${docs.length} players`)){UI.pTitle='';closeModal()}else busy(f);
+  },
+  async rate(f,fd){
+    const G=g(fd),sp=UI.perfSport,skills=sportOf(sp).skills,date=G('date')||today(),grp='r'+uid();
+    const list=active().filter(s=>(s.sport||'cricket')===sp&&(!UI.pBatch||s.batch===UI.pBatch));const docs=[];
+    list.forEach(s=>{const sk={};skills.forEach((k,i)=>{const v=G('r'+i+'_'+s.id);if(v!=='')sk[k]=Math.max(1,Math.min(10,num(v)))});const vals=Object.values(sk);if(vals.length)docs.push({studentId:s.id,sport:sp,date,grp,skills:sk,avg:vals.reduce((a,b)=>a+b,0)/vals.length})});
+    if(!docs.length)return toast('Enter at least one rating','err');
+    busy(f,'Saving…');
+    if(await W(async()=>{for(const d of docs)await C('ratings').add(d)},`Saved ratings for ${docs.length} students`))closeModal();else busy(f);
+  },
+  async plan(f,fd){const G=g(fd),id=f.dataset.id,data={name:G('name'),sport:G('sport')||'cricket',months:parseInt(G('months'))||1,amount:num(G('amount')),newAmount:num(G('newAmount')),newFrom:G('newFrom')};
+    if(!data.name||data.amount<=0)return toast('Enter plan name and amount','err');
+    if(data.newAmount>0&&!data.newFrom)return toast('Choose the date the new fee starts','err');
+    if(!(data.newAmount>0)){data.newAmount=0;data.newFrom=''}
+    if(data.newFrom&&data.newFrom<=today()){data.amount=data.newAmount;data.newAmount=0;data.newFrom=''}
+    if(await W(()=>id?D('plans/'+id).set(data):C('plans').add(data),'Plan saved'))closeModal()},
+  async acname(f,fd){const n=g(fd)('name');if(!n)return toast('Enter academy name','err');if(await saveSettings({name:n},'Academy name updated'))closeModal()},
+  async raise(f,fd){const G=g(fd),r={how:G('how'),by:num(G('by')),from:G('from')};if(!(r.by>0)||!r.from)return toast('Enter increase and start date','err');
+    UI.raise=r;
+    openModal(`<div class="mh"><h2>Fee increase from ${fmtD(r.from)}</h2>${xbtn}</div><div class="tw"><table><thead><tr><th>Plan</th><th>Now</th><th>From ${fmtD(r.from)}</th></tr></thead><tbody>${S.plans.map(p=>`<tr><td>${esc(p.name)}</td><td>${money(p.amount)}</td><td><b>${money(raiseCalc(p,r))}</b></td></tr>`).join('')}</tbody></table></div><p class="hint">New amounts are rounded to the nearest ₹50. You can fine-tune any plan later with its Edit button.</p><div class="actions"><button class="btn ghost" data-act="close">Cancel</button><button class="btn" data-act="applyRaise">Apply to all plans</button></div>`)},
+  async settings(f,fd){const G=g(fd);
+    saveSettings({name:G('name')||'My Sports Academy',phone:G('phone'),upi:G('upi'),address:G('address'),remindDays:Math.max(0,parseInt(G('remindDays'))||0),
+      batches:G('batches').split(',').map(x=>x.trim()).filter(Boolean),admissionFee:num(G('admissionFee')),kitFee:num(G('kitFee')),
+      reminderTpl:fd.get('reminderTpl')||DEF.reminderTpl,receiptTpl:fd.get('receiptTpl')||DEF.receiptTpl,
+      weights:{perf1:num(G('w1')),perf2:num(G('w2')),coach:num(G('w3')),att:num(G('w4'))}})},
+  async sport(f,fd){const G=g(fd),name=G('sname');if(!name)return toast('Enter sport name','err');
+    const id=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'sport'+uid();
+    if(S.settings.sports.find(x=>x.id===id))return toast('Sport already added','err');
+    const skills=G('skills').split(',').map(x=>x.trim()).filter(Boolean);
+    saveSettings({sports:[...S.settings.sports,{id,name,skills:skills.length?skills:['Skill','Fitness','Discipline']}]},name+' added')},
+  async import(f,fd){let o;try{o=JSON.parse(fd.get('data'))}catch(e){return toast('That text is not a valid backup','err')}
+    if(!o||typeof o!=='object'||!Array.isArray(o.students))return toast('That text is not a valid backup','err');
+    const strip=x=>{const {id,...r}=x;return r};let n=0;busy(f,'Importing…');
+    const ok=await W(async()=>{
+      if(o.settings)await D('settings/academy').set(normSettings(o.settings));
+      for(const c of ['plans','students','payments','perf','ratings'])for(const x of (o[c]||[]))if(x&&x.id){await D(c+'/'+x.id).set(strip(x));n++}
+      for(const [d,v] of Object.entries(o.attendance||{}))if(/^\d{4}-\d{2}-\d{2}$/.test(d)){await D('attendance/'+d).set(v);n++}
+    });
+    if(ok){toast(`Imported ${n} records`);closeModal()}else busy(f)},
+};
+
+/* ============ events ============ */
+document.addEventListener('click',e=>{
+  if(e.target.id==='modal'){closeModal();return}
+  if(e.target.id==='confirm'){A.cno();return}
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const fn=A[el.dataset.act];if(!fn)return;
+  if(el.tagName!=='A'||el.getAttribute('href')==='#')e.preventDefault();
+  e.stopPropagation();fn(el.dataset,el,e);
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.f){UI[t.dataset.f]=t.value;render();return}
+  if(t.dataset.mf){UI[t.dataset.mf]=t.value;if(t.dataset.mf==='pBatch')openModal(UI.modal&&UI.modal.f==='rate'?rateForm():perfForm(),UI.modal);return}
+  if(t.dataset.pf){const f=t.form,sid=f.studentId.value;
+    if(t.name==='studentId'){openModal(payForm(sid));return}
+    if(t.name==='kind'){openModal(payForm(sid,t.value));return}
+    if(t.name==='periods'){const s=stu(sid),pl=s&&plan(s.planId),n=parseInt(t.value)||1;f.amount.value=calcAmt(s,'plan',n);const from=s.nextDue||s.joinDate||today(),to=addMonths(from,num(pl.months)*n);const c=f.querySelector('#covers');if(c)c.innerHTML=`Covers ${fmtD(from)} → ${fmtD(to)}. Next due date becomes <b>${fmtD(to)}</b>.`}}
+});
+document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,fn=FORMS[f.dataset.form];if(fn)fn(f,new FormData(f))});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#confirm').classList.contains('hidden'))A.cno();else if(UI.modal)closeModal()}});
+
+/* ============ boot ============ */
+function openAcademy(aid){
+  // Each academy's data lives in its own separate space:
+  //  - Firebase: academies/<login user id>/...  (locked by firestore.rules to that login only)
+  //  - claude.ai and this-device mode: one academy
+  UI.aid=aid;
+  PFX=MODE.kind==='firebase'?'academies/'+aid+'/':'';
+  Object.assign(S,{students:[],plans:[],payments:[],perf:[],ratings:[],att:{},settings:normSettings({name:pendingName||DEF.name}),loaded:false});
+  closeModal();subscribe();render();
+}
+function showSetup(){
+  const L=$('#login');L.classList.remove('hidden');
+  L.innerHTML=`<form class="box" data-form="firstAcad"><div class="logo"><svg viewBox="0 0 24 24">${IC.bat}</svg></div><h1 style="margin-bottom:4px">Welcome! 👋</h1><p class="meta" style="margin:0 0 18px">Signed in as <b>${esc(myEmail())}</b>. What is your academy called?</p>
+   ${inp('aname','Academy name','','text','required placeholder="Star Cricket Academy"')}
+   <button class="btn" style="width:100%;margin-top:14px">Start using the app</button><button class="btn ghost sm" type="button" data-act="signOut" style="width:100%;margin-top:8px">Sign out</button></form>`;
+}
+FORMS.firstAcad=async(f,fd)=>{const n=g(fd)('aname');if(!n)return;busy(f,'Saving…');
+  if(await W(async()=>{await db.doc('academies/'+UI.aid).set({email:myEmail(),name:n,createdAt:new Date().toISOString()});await D('settings/academy').set(normSettings({name:n}))}))$('#login').classList.add('hidden');else busy(f)};
+function subscribe(){
+  unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[];
+  const pending=new Set(['students','plans','payments','perf','ratings','attendance','settings']);
+  const timer=setTimeout(()=>{if(pending.size)setSync('Offline','')},10000);
+  const done=(k,snap)=>{if(!snap.metadata.fromCache&&pending.has(k)){pending.delete(k);if(!pending.size){clearTimeout(timer);setSync(MODE.kind==='local'?'This device':'Synced',MODE.kind==='local'?'local':'ok');S.loaded=true}}};
+  const onErr=e=>{clearTimeout(timer);console.error(e);setSync(e&&(e.code==='revoked'||e.code==='permission-denied')?'No access':'Sync error','err');if(e&&e.code==='permission-denied')toast('Access denied — check firestore.rules is published (README Part 3B)','err')};
+  let raf=0;const later=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render()})};
+  ['students','plans','payments','perf','ratings'].forEach(c=>unsubs.push(C(c).onSnapshot(snap=>{S[c]=snap.docs.map(d=>({...d.data(),id:d.id}));done(c,snap);later()},onErr)));
+  unsubs.push(C('attendance').onSnapshot(snap=>{const m={};snap.docs.forEach(d=>m[d.id]=d.data());S.att=m;done('attendance',snap);later()},onErr));
+  unsubs.push(D('settings/academy').onSnapshot(async snap=>{
+    S.settings=normSettings(snap.exists?snap.data():{name:pendingName||DEF.name});done('settings',snap);later();
+    if(MODE.kind==='firebase'&&!snap.exists&&!snap.metadata.fromCache){
+      if(pendingName){const n=pendingName;pendingName='';await W(async()=>{await db.doc('academies/'+UI.aid).set({email:myEmail(),name:n,createdAt:new Date().toISOString()});await D('settings/academy').set(normSettings({name:n}))})}
+      else showSetup();
+    }
+  },onErr));
+}
+function showLogin(err){
+  const L=$('#login');L.classList.remove('hidden');const up=!!UI.signup;
+  L.innerHTML=`<form class="box" data-form="login"><div class="logo"><svg viewBox="0 0 24 24">${IC.bat}</svg></div><h1 style="margin-bottom:4px">${up?'Create your account':'Academy Manager'}</h1><p class="meta" style="margin:0 0 18px">${up?'Each academy gets its own private account — your data is visible only to you.':'Sign in with your academy email'}</p>
+   <div class="grid2" style="grid-template-columns:1fr">${up?inp('aname','Academy name','','text','required placeholder="Star Cricket Academy"'):''}${inp('email','Email','','email','required autocomplete="username"')}${inp('password',up?'Create password (min 6 letters)':'Password','','password',`required minlength="6" autocomplete="${up?'new-password':'current-password'}"`)}</div>
+   ${err?`<p style="color:var(--red);font-size:13px;font-weight:600;margin:10px 0 0">${esc(err)}</p>`:''}
+   <button class="btn" style="width:100%;margin-top:14px">${up?'Create account':'Sign in'}</button>
+   ${up?'':`<button class="btn ghost sm" type="button" data-act="resetPw" style="width:100%;margin-top:8px">Forgot password?</button>`}
+   <p style="text-align:center;margin:14px 0 0;font-size:14px">${up?'Already have an account?':'New academy?'} <a href="#" data-act="loginMode" data-v="${up?'0':'1'}" style="color:var(--em3);font-weight:800">${up?'Sign in':'Create account'}</a></p></form>`;
+}
+const AUTH_ERR={'auth/invalid-credential':'Wrong email or password','auth/wrong-password':'Wrong email or password','auth/user-not-found':'No account with this email — tap “Create account”','auth/email-already-in-use':'This email already has an account — tap “Sign in”','auth/weak-password':'Password must be at least 6 letters','auth/invalid-email':'Please enter a valid email','auth/operation-not-allowed':'Email login is not turned on in Firebase (README Part 3C)','auth/admin-restricted-operation':'New sign-ups are turned off. Ask the app owner to create your account.','auth/too-many-requests':'Too many tries — wait a few minutes','auth/network-request-failed':'No internet connection'};
+FORMS.login=async(f,fd)=>{const G=g(fd),up=!!UI.signup;busy(f,up?'Creating…':'Signing in…');
+  try{if(up){pendingName=G('aname');await MODE.fb.U.createUserWithEmailAndPassword(MODE.fb.auth,G('email'),G('password'))}else await MODE.fb.U.signInWithEmailAndPassword(MODE.fb.auth,G('email'),G('password'))}
+  catch(e){pendingName='';showLogin(AUTH_ERR[e.code]||('Failed: '+(e.code||e.message)))}};
+A.resetPw=async()=>{const em=$('#login input[name=email]').value.trim();if(!em)return toast('Type your email first','err');try{await MODE.fb.U.sendPasswordResetEmail(MODE.fb.auth,em);toast('Password reset email sent')}catch(e){toast(AUTH_ERR[e.code]||'Could not send','err')}};
+
+render();
+(async()=>{
+  // 1) Inside claude.ai — one academy
+  if(typeof claude!=='undefined'&&claude&&claude.use){
+    try{db=await claude.use('db')}catch(e){db=null}
+    if(db){MODE.kind='claude';openAcademy('main');return}
+  }
+  // 2) Firebase — many academies, each with its own login; syncs all devices
+  const cfg=window.FIREBASE_CONFIG;
+  if(cfg&&cfg.apiKey&&cfg.projectId){
+    try{
+      setSync('Connecting');const fb=await firebaseDB(cfg);MODE.kind='firebase';MODE.fb=fb;
+      fb.U.onAuthStateChanged(fb.auth,u=>{
+        if(u){$('#login').classList.add('hidden');db=fb.db;openAcademy(u.uid)}
+        else{unsubs.forEach(x=>{try{x()}catch(e){}});unsubs=[];db=null;PFX='';Object.assign(S,{students:[],plans:[],payments:[],perf:[],ratings:[],att:{},settings:normSettings({})});closeModal();UI.tab='home';UI.signup=false;render();setSync('Signed out','err');showLogin()}
+      });
+      return;
+    }catch(e){console.error(e);toast('Could not load Firebase — using this device for now','err')}
+  }
+  // 3) This device only — one academy
+  db=localDB();MODE.kind='local';openAcademy('main');
+})();
+if('serviceWorker' in navigator&&location.protocol==='https:'&&MODE&&!/claude|anthropic/.test(location.hostname)){
+  try{if(window.top===window)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}catch(e){}
+}
+</script>
+</body>
+</html>
