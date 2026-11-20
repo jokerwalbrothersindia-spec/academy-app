@@ -236,6 +236,7 @@ label.chk input{width:20px;height:20px;min-height:0;-webkit-appearance:checkbox;
 <div id="login" class="login hidden"></div>
 <div id="toast"></div>
 <script src="firebase-config.js"></script>
+<script src="qrcode.js"></script>
 <script>
 /* ============ icons ============ */
 const IC={
@@ -296,7 +297,7 @@ const DEF={name:'My Sports Academy',phone:'',upi:'',address:'',remindDays:3,
   sports:[{id:'cricket',name:'Cricket',skills:['Batting','Bowling','Fielding','Fitness','Discipline']}],
   admissionFee:0,kitFee:0,
   weights:{perf1:30,perf2:30,coach:25,att:15},
-  reminderTpl:'Namaste {parent} 🙏\n{academy} se reminder: {name} ki fees {amount} {status}.\nDue date: {due_date} ({plan})\nUPI: {upi}\nPayment ke baad screenshot bhej dein. Dhanyavaad!',
+  reminderTpl:'Namaste {parent} 🙏\n{academy} se reminder: {name} ki fees {amount} {status}.\nDue date: {due_date} ({plan})\nUPI: {upi}\n💳 QR code / Pay now: {pay_link}\nPayment ke baad screenshot bhej dein. Dhanyavaad!',
   receiptTpl:'Namaste {parent} 🙏\n{name} ki {type} {amount} receive ho gayi ({mode}, {date}).\nNext due date: {next_due}\nDhanyavaad,\n{academy}'};
 function normSettings(d){d=d||{};const s={...DEF,...d,weights:{...DEF.weights,...(d.weights||{})}};
   s.batches=Array.isArray(s.batches)?s.batches.filter(Boolean):[];
@@ -380,11 +381,22 @@ function feeBadge(f){
   }
 }
 const needsAttention=f=>['overdue','due','soon','pending'].includes(f.status);
+const validUpi=v=>/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(String(v||'').trim());
+function upiString(amount,note){const st=S.settings;return 'upi://pay?'+['pa='+encodeURIComponent(st.upi.trim()),'pn='+encodeURIComponent(st.name||'Academy'),amount>0?'am='+Number(amount).toFixed(2):'','cu=INR','tn='+encodeURIComponent(note||'Fees')].filter(Boolean).join('&')}
+function payLink(s,amount){
+  const st=S.settings;if(!validUpi(st.upi)||MODE.kind==='claude'||!/^https?:/.test(location.protocol))return '';
+  const base=location.origin+location.pathname.replace(/[^/]*$/,'')+'pay.html';
+  const q=new URLSearchParams({pa:st.upi.trim(),pn:st.name||'Academy',am:String(Math.round(amount||0)),tn:(s.name+' fees').slice(0,60),st:s.name});
+  return base+'?'+q.toString();
+}
 function reminderMsg(s,f){
   const st=S.settings;
   const word={overdue:'pending hai (overdue)',due:'aaj due hai',soon:`${f.days} din mein due hai`,pending:'pending hai'}[f.status]||'due hai';
   const parts=[];if(f.planAmt>0)parts.push(f.plan.name+(f.periods>1?` ×${f.periods}`:''));if(f.one>0)parts.push('admission/kit');
-  return fillTpl(st.reminderTpl,{name:s.name,parent:s.parent||'Parent',amount:money(f.amount),status:word,due_date:fmtD(f.due||today()),plan:parts.join(' + ')||'Fees',academy:st.name,upi:st.upi||'',phone:st.phone||''});
+  const pl=payLink(s,f.amount);
+  let msg=fillTpl(st.reminderTpl,{name:s.name,parent:s.parent||'Parent',amount:money(f.amount),status:word,due_date:fmtD(f.due||today()),plan:parts.join(' + ')||'Fees',academy:st.name,upi:st.upi||'',phone:st.phone||'',pay_link:pl});
+  if(pl&&!/\{pay_link\}/.test(st.reminderTpl))msg+='\n\n💳 QR code / Pay now: '+pl;
+  return msg;
 }
 function receiptMsg(p,s){
   const st=S.settings;const nd=p.kind==='plan'?p.coversTo:(s&&s.nextDue);
@@ -449,7 +461,7 @@ const sportOpts=()=>S.settings.sports.map(x=>[x.id,x.name]);
 const batchOpts=(all='All batches')=>[['',all],...S.settings.batches.map(b=>[b,b])];
 const xbtn=`<button class="x" data-act="close" aria-label="Close">${ic('x','sm')}</button>`;
 
-function openModal(html,cfg){UI.modal=cfg||{type:'form'};$('#sheet').className='sheet'+(cfg&&cfg.wide?' wide':'');$('#sheet').innerHTML=html;$('#modal').classList.remove('hidden');$('#sheet').scrollTop=0;document.body.style.overflow='hidden'}
+function openModal(html,cfg){UI.modal=cfg||{type:'form'};$('#sheet').className='sheet'+(cfg&&cfg.wide?' wide':'');$('#sheet').innerHTML=html;try{updDuePreview($('#sheet form[data-form=student]'));updPayPreview($('#sheet form[data-form=payment]'),false)}catch(e){}$('#modal').classList.remove('hidden');$('#sheet').scrollTop=0;document.body.style.overflow='hidden'}
 function closeModal(){UI.modal=null;$('#modal').classList.add('hidden');$('#sheet').innerHTML='';document.body.style.overflow=''}
 let confirmCb=null;
 function ask(msg,yes,cb,danger=true){confirmCb=cb;$('#csheet').innerHTML=`<h2 style="margin:6px 0 10px">Are you sure?</h2><p style="margin:0 0 16px;color:var(--ink2)">${msg}</p><div class="actions"><button class="btn ghost" data-act="cno">Cancel</button><button class="btn ${danger?'red':''}" data-act="cyes">${esc(yes)}</button></div>`;$('#confirm').classList.remove('hidden')}
@@ -616,11 +628,11 @@ V.settings=()=>{
   ${acCard}
   <form class="card" data-form="settings"><h3>Academy details</h3><div class="grid2">
    ${inp('name','Academy name',st.name)}${inp('phone','Academy WhatsApp / phone',st.phone,'tel')}
-   ${inp('upi','UPI ID (shown in reminders)',st.upi,'text','placeholder="academy@upi"')}${inp('address','Address',st.address)}
+   ${inp('upi','UPI ID (for QR code in reminders)',st.upi,'text','placeholder="9876543210@ybl"')}${inp('address','Address',st.address)}
    ${inp('remindDays','Remind how many days before due date',st.remindDays,'number','min="0" max="30"')}
    ${inp('batches','Batches (comma separated)',st.batches.join(', '),'text','placeholder="Morning, Evening, Under-12"')}
    ${inp('admissionFee','Default admission fee ₹',st.admissionFee,'number','min="0"')}${inp('kitFee','Default kit fee ₹',st.kitFee,'number','min="0"')}
-   <label class="full">WhatsApp fee reminder message<textarea name="reminderTpl" rows="6">${esc(st.reminderTpl)}</textarea><span class="hint">Fill-ins: {name} {parent} {amount} {status} {due_date} {plan} {academy} {upi} {phone}. A line whose fill-in is blank is skipped.</span></label>
+   <label class="full">WhatsApp fee reminder message<textarea name="reminderTpl" rows="6">${esc(st.reminderTpl)}</textarea><span class="hint">Fill-ins: {name} {parent} {amount} {status} {due_date} {plan} {academy} {upi} {pay_link} {phone}. {pay_link} = link that opens your UPI QR code with the amount filled in (needs UPI ID above). A line whose fill-in is blank is skipped.</span></label>
    <label class="full">WhatsApp payment receipt message<textarea name="receiptTpl" rows="5">${esc(st.receiptTpl)}</textarea><span class="hint">Fill-ins: {name} {parent} {amount} {type} {mode} {date} {next_due} {academy}</span></label>
    <div class="full"><b style="font-size:13px">Ranking weights (%)</b><div class="wbox" style="margin-top:6px">${inp('w1','Batting / performance',w.perf1,'number','min="0"')}${inp('w2','Bowling & fielding',w.perf2,'number','min="0"')}${inp('w3','Coach rating',w.coach,'number','min="0"')}${inp('w4','Attendance',w.att,'number','min="0"')}</div></div>
    <div class="full actions"><button class="btn">Save settings</button></div></div></form>
@@ -648,13 +660,21 @@ function studentForm(s){
    ${sel('role','Playing role (cricket)',['',...ROLES],s.role)}${sel('batStyle','Batting style',['',...BAT],s.batStyle)}
    ${sel('bowlStyle','Bowling style',['',...BOWL],s.bowlStyle)}${inp('joinDate','Joining date',s.joinDate||today(),'date')}
    ${sel('planId','Fee plan',[['','— No plan —'],...S.plans.map(p=>[p.id,`${p.name} · ${money(pAmt(p,today()))}`])],s.planId)}
-   ${inp('nextDue',isNew?'First fee due date':'Next fee due date',s.nextDue||today(),'date')}
+   <div id="dueWrap">${inp('nextDue',isNew?'First fee due date':'Next fee due date',s.nextDue||today(),'date',isNew?'data-sf="1"':'')}</div>
    ${inp('admissionFee','Admission fee ₹',s.admissionFee??(isNew?st.admissionFee:0),'number','min="0"')}${inp('kitFee','Kit fee ₹',s.kitFee??(isNew?st.kitFee:0),'number','min="0"')}
    ${!isNew?`<div class="full row" style="gap:16px"><label class="chk"><input type="checkbox" name="admissionPaid" ${s.admissionPaid?'checked':''}> Admission fee paid</label><label class="chk"><input type="checkbox" name="kitPaid" ${s.kitPaid?'checked':''}> Kit fee paid</label></div>`:''}
    ${sel('status','Status',[['active','Active'],['inactive','Left / Inactive']],s.status||'active')}${inp('address','Address',s.address)}
    <label class="full">Notes<textarea name="notes" rows="2">${esc(s.notes)}</textarea></label>
-   ${isNew?`<div class="full paybox"><b style="font-size:13.5px;width:100%">Payment received now?</b><label class="chk"><input type="checkbox" name="payPlan"> First plan fee</label><label class="chk"><input type="checkbox" name="payAdm"> Admission fee</label><label class="chk"><input type="checkbox" name="payKit"> Kit fee</label><label style="flex-direction:row;align-items:center;gap:8px">Mode <select name="payMode" style="width:auto;min-height:38px;padding:6px 30px 6px 10px">${opt(MODES,'Cash')}</select></label><label style="flex-direction:row;align-items:center;gap:8px">Paid on <input type="date" name="payDate" value="${today()}" max="${today()}" style="width:auto;min-height:38px;padding:6px 10px"></label><span class="hint" style="width:100%">Old student who already paid? Set the <b>First fee due date</b> to when their fee period started and <b>Paid on</b> to the day they paid.</span></div>`:''}
+   ${isNew?`<div class="full paybox"><b style="font-size:13.5px;width:100%">Payment received now?</b><label class="chk"><input type="checkbox" name="payPlan" data-sf="1"> Plan fee</label><label class="chk"><input type="checkbox" name="payAdm"> Admission fee</label><label class="chk"><input type="checkbox" name="payKit"> Kit fee</label><label style="flex-direction:row;align-items:center;gap:8px">Mode <select name="payMode" style="width:auto;min-height:38px;padding:6px 30px 6px 10px">${opt(MODES,'Cash')}</select></label><label style="flex-direction:row;align-items:center;gap:8px">Paid on <input type="date" name="payDate" value="${today()}" max="${today()}" data-sf="1" style="width:auto;min-height:38px;padding:6px 10px"></label><div id="duePreview" style="width:100%"></div><span class="hint" style="width:100%">Old student? Just put the old date in <b>Paid on</b> — the next due date is worked out automatically.</span></div>`:''}
    <div class="full actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save student</button></div></form>`;
+}
+function updDuePreview(f){
+  if(!f||!f.payPlan)return;const pl=plan(f.planId.value),on=f.payPlan.checked&&pl,box=f.querySelector('#duePreview'),wrap=f.querySelector('#dueWrap');
+  if(wrap)wrap.style.display=on?'none':'';
+  if(!box)return;
+  if(on){const from=f.payDate.value||today(),to=addMonths(from,num(pl.months)||1);box.innerHTML=`<div class="badge b-grn" style="font-size:13px;padding:8px 12px;white-space:normal;line-height:1.5">✓ ${esc(pl.name)} ${money(pAmt(pl,from))} · covers ${fmtD(from)} → ${fmtD(to)} · <b>&nbsp;Next due: ${fmtD(to)}</b></div>`}
+  else if(f.payPlan.checked&&!pl)box.innerHTML='<span class="hint" style="color:var(--red)">Choose a fee plan above first</span>';
+  else box.innerHTML='';
 }
 function profileHtml(id){
   const s=stu(id);if(!s)return `<div class="mh"><h2>Student not found</h2>${xbtn}</div>`;
@@ -669,7 +689,7 @@ function profileHtml(id){
   if(cr){const c=cricketStats(id);perf=`<div class="stats">${[['Games',c.games],['Runs',c.runs],['High score',c.hs],['Average',c.avg.toFixed(1)],['Strike rate',c.sr.toFixed(0)],['4s / 6s',c.f4+' / '+c.x6],['Wickets',c.wk],['Overs',showOvers(c.bb)],['Economy',c.econ.toFixed(2)],['Best',c.best?c.best.w+'/'+c.best.r:'—'],['Catches',c.ct],['Run outs',c.ro]].map(([l,v])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('')}</div>`}
   else{const pf=S.perf.filter(p=>p.studentId===id);perf=`<div class="stats"><div class="stat"><b>${pf.length}</b><span>Sessions</span></div><div class="stat"><b>${sum(pf,'score')}</b><span>Total score</span></div><div class="stat"><b>${pf.length?(sum(pf,'score')/pf.length).toFixed(1):0}</b><span>Avg score</span></div></div>`}
   return `<div class="mh"><div class="prof" style="min-width:0">${av(s.name)}<div style="min-width:0"><h2>${esc(s.name)}</h2><div class="meta">${esc(sp.name)}${s.batch?' · '+esc(s.batch):''}${s.role?' · '+esc(s.role):''}${s.status==='inactive'?' · Inactive':''}</div>${me?`<span class="badge b-gold" style="margin-top:4px">🏆 Rank ${me.rank} of ${rk.length} · ${me.total.toFixed(1)}</span>`:''}</div></div>${xbtn}</div>
-  <div class="row" style="margin-bottom:14px">${chat?`<a class="btn wa sm" href="${esc(chat)}" target="_blank" rel="noopener">${ic('wa','sm')} WhatsApp</a>`:''}${needsAttention(f)?remindBtn(s,f):''}<button class="btn sm" data-act="pay" data-id="${id}">₹ Payment</button><button class="btn ghost sm" data-act="editStudent" data-id="${id}">${ic('edit','sm')} Edit</button><button class="btn ghost sm" data-act="delStudent" data-id="${id}">Delete</button></div>
+  <div class="row" style="margin-bottom:14px">${chat?`<a class="btn wa sm" href="${esc(chat)}" target="_blank" rel="noopener">${ic('wa','sm')} WhatsApp</a>`:''}${needsAttention(f)?remindBtn(s,f):''}${validUpi(S.settings.upi)?`<button class="btn gold sm" data-act="shareQR" data-id="${id}">▦ Share QR</button>`:''}<button class="btn sm" data-act="pay" data-id="${id}">₹ Payment</button><button class="btn ghost sm" data-act="editStudent" data-id="${id}">${ic('edit','sm')} Edit</button><button class="btn ghost sm" data-act="delStudent" data-id="${id}">Delete</button></div>
   <div class="card" style="box-shadow:none;border:1px solid var(--line)"><div class="row between"><h3 style="margin:0">Fees</h3>${feeBadge(f)}</div>
    <div class="kv" style="margin-top:12px"><div><span>Plan</span>${esc(f.plan?f.plan.name+' · '+planPrice(f.plan):'No plan')}</div><div><span>Next due</span>${fmtD(f.due)}</div><div><span>Due now</span><b>${money(f.amount)}</b></div><div><span>Admission / Kit</span>${num(s.admissionFee)?(s.admissionPaid?'✅':'⏳')+' '+money(s.admissionFee):'—'} / ${num(s.kitFee)?(s.kitPaid?'✅':'⏳')+' '+money(s.kitFee):'—'}</div></div>
    ${pays.length?`<div class="tw" style="margin-top:12px"><table><thead><tr><th>Date</th><th>For</th><th>Mode</th><th>Amount</th></tr></thead><tbody>${pays.slice(0,12).map(p=>`<tr><td>${fmtD(p.date)}</td><td>${esc(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' ×'+p.periods:''):KINDS[p.kind]||p.kind)}</td><td>${esc(p.mode||'')}</td><td><b>${money(p.amount)}</b></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">No payments yet.</p>'}</div>
@@ -689,20 +709,29 @@ function payForm(sid,kind){
   kinds.push(['other','Other']);
   if(!kind)kind=pl&&f&&['overdue','due','soon','paid'].includes(f.status)?'plan':kinds[0][0];
   const periods=kind==='plan'&&f?Math.max(1,f.periods):1;
-  const amt=calcAmt(s,kind,periods);
-  const from=s?(s.nextDue||s.joinDate||today()):today();
+  const hasPlanPay=s?S.payments.some(p=>p.studentId===s.id&&p.kind==='plan'):false;
+  const from=s?(hasPlanPay?(s.nextDue||today()):today()):today();
+  const amt=calcAmt(s,kind,periods,from);
   return `<div class="mh"><h2>Record payment</h2>${xbtn}</div>
   <form data-form="payment" class="grid2">
    <label class="full">Student<select name="studentId" data-pf="1" required><option value="">— Select student —</option>${act.map(x=>`<option value="${x.id}" ${x.id===sid?'selected':''}>${esc(x.name)}${x.batch?' · '+esc(x.batch):''}</option>`).join('')}</select></label>
    ${s?`${sel('kind','Payment for',kinds,kind,'data-pf="1"')}
+   ${inp('date','Payment date (old date allowed)',today(),'date',`max="${today()}" data-pf="1"`)}
    ${kind==='plan'?`${sel('periods',`How many ${pl&&num(pl.months)>1?num(pl.months)+'-month periods':'months'}`,Array.from({length:12},(_,i)=>[i+1,String(i+1)]),periods,'data-pf="1"')}
-    <p class="full hint" style="margin:0" id="covers">Covers ${fmtD(from)} → ${fmtD(addMonths(from,num(pl.months)*periods))}. Next due date becomes <b>${fmtD(addMonths(from,num(pl.months)*periods))}</b>.</p>`:''}
-   ${inp('amount','Amount received ₹',amt,'number','min="1" required id="payAmt" inputmode="numeric"')}${inp('date','Payment date (old date allowed)',today(),'date',`max="${today()}"`)}
+    ${inp('pfrom','Fee period starts from',from,'date',`data-pf="1" data-auto="${hasPlanPay?'0':'1'}"`)}
+    <div class="full" id="covers"></div>`:''}
+   ${inp('amount','Amount received ₹',amt,'number','min="1" required id="payAmt" inputmode="numeric"')}
    ${sel('mode','Mode',MODES,'Cash')}${inp('note','Note (optional)','','text','placeholder="UPI ref no., etc."')}
    <div class="full actions"><button class="btn ghost" type="button" data-act="close">Cancel</button><button class="btn">Save payment</button></div>`:'<p class="full hint">Choose a student first.</p>'}
   </form>`;
 }
-function calcAmt(s,kind,periods){if(!s)return '';const pl=plan(s.planId);if(kind==='plan'&&pl){let d=s.nextDue||s.joinDate||today(),t=0;for(let i=0;i<periods;i++){t+=pAmt(pl,d);d=addMonths(d,num(pl.months)||1)}return t}if(kind==='admission')return num(s.admissionFee);if(kind==='kit')return num(s.kitFee);return ''}
+function updPayPreview(f,recalc){
+  if(!f||!f.pfrom||!f.periods)return;const s=stu(f.studentId.value),pl=s&&plan(s.planId);if(!pl)return;
+  const n=parseInt(f.periods.value)||1,from=f.pfrom.value||today(),to=addMonths(from,(num(pl.months)||1)*n);
+  if(recalc)f.amount.value=calcAmt(s,'plan',n,from);
+  const c=f.querySelector('#covers');if(c)c.innerHTML=`<div class="badge b-grn" style="font-size:13px;padding:8px 12px;white-space:normal">✓ Covers ${fmtD(from)} → ${fmtD(to)} · <b>&nbsp;Next due date: ${fmtD(to)}</b></div>`;
+}
+function calcAmt(s,kind,periods,from){if(!s)return '';const pl=plan(s.planId);if(kind==='plan'&&pl){let d=from||s.nextDue||s.joinDate||today(),t=0;for(let i=0;i<periods;i++){t+=pAmt(pl,d);d=addMonths(d,num(pl.months)||1)}return t}if(kind==='admission')return num(s.admissionFee);if(kind==='kit')return num(s.kitFee);return ''}
 function perfForm(){
   const sp=UI.perfSport,cr=sp==='cricket',spn=sportOf(sp).name;
   const list=active().filter(s=>(s.sport||'cricket')===sp&&(!UI.pBatch||s.batch===UI.pBatch)).sort((a,b)=>String(a.name).localeCompare(b.name));
@@ -790,6 +819,30 @@ const A={
 };
 A.signOut=()=>{if(MODE.fb)MODE.fb.U.signOut(MODE.fb.auth)};
 A.loginMode=d=>{UI.signup=d.v==='1';showLogin()};
+async function qrImageBlob(s,amount){
+  const st=S.settings,W2=720,H=980,cv=document.createElement('canvas');cv.width=W2;cv.height=H;const x=cv.getContext('2d');
+  const g=x.createLinearGradient(0,0,W2,H);g.addColorStop(0,'#0f5a3f');g.addColorStop(1,'#082f22');x.fillStyle=g;x.fillRect(0,0,W2,H);
+  x.fillStyle='#fff';const r=36;x.beginPath();x.roundRect?x.roundRect(40,40,W2-80,H-80,r):x.rect(40,40,W2-80,H-80);x.fill();
+  x.textAlign='center';x.fillStyle='#132119';x.font='800 40px "Plus Jakarta Sans",system-ui,sans-serif';x.fillText((st.name||'Academy').slice(0,28),W2/2,120);
+  x.fillStyle='#6f7d74';x.font='600 26px "Plus Jakarta Sans",system-ui,sans-serif';x.fillText(('Fees for '+s.name).slice(0,40),W2/2,165);
+  if(amount>0){x.fillStyle='#0f5a3f';x.font='800 64px "Plus Jakarta Sans",system-ui,sans-serif';x.fillText('₹'+Math.round(amount).toLocaleString('en-IN'),W2/2,250)}
+  const qr=qrcode(0,'M');qr.addData(upiString(amount,s.name+' fees'));qr.make();const n=qr.getModuleCount(),size=480,cell=Math.floor(size/n),qs=cell*n,ox=(W2-qs)/2,oy=290;
+  x.fillStyle='#e8c172';x.fillRect(ox-18,oy-18,qs+36,qs+36);x.fillStyle='#fff';x.fillRect(ox-12,oy-12,qs+24,qs+24);x.fillStyle='#000';
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(qr.isDark(i,j))x.fillRect(ox+j*cell,oy+i*cell,cell,cell);
+  x.fillStyle='#3a4a40';x.font='700 26px "Plus Jakarta Sans",system-ui,sans-serif';x.fillText('UPI: '+st.upi.trim(),W2/2,oy+qs+70);
+  x.fillStyle='#6f7d74';x.font='600 22px "Plus Jakarta Sans",system-ui,sans-serif';x.fillText('Scan with Google Pay · PhonePe · Paytm · BHIM',W2/2,oy+qs+110);
+  return await new Promise(res=>cv.toBlob(res,'image/png'));
+}
+A.shareQR=async d=>{
+  const s=stu(d.id);if(!s)return;const f=feeInfo(s);const amount=f.amount||pAmt(f.plan,today());
+  let blob;try{blob=await qrImageBlob(s,amount)}catch(e){console.error(e);return toast('Could not make QR','err')}
+  const file=new File([blob],'fees-qr-'+s.name.replace(/\W+/g,'-')+'.png',{type:'image/png'});
+  const text=needsAttention(f)?reminderMsg(s,f):`${S.settings.name}: ${s.name} fees ${money(amount)} — scan the QR to pay.`;
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const url=URL.createObjectURL(blob),pl=payLink(s,amount);
+  openModal(`<div class="mh"><h2>Fees QR · ${esc(s.name)}</h2>${xbtn}</div><img src="${url}" alt="QR" style="width:100%;max-width:360px;display:block;margin:0 auto;border-radius:18px"><p class="hint" style="text-align:center">Long-press (phone) or right-click (PC) the image → Save / Copy, then send it on WhatsApp.</p><div class="actions" style="justify-content:center">${pl?`<a class="btn wa" href="${esc(waLink(s.phone,text))}" target="_blank" rel="noopener">${ic('wa','sm')} Send pay link</a>`:''}<button class="btn ghost" data-act="close">Done</button></div>`);
+};
+A.retry=()=>location.reload();
 A.installHide=()=>{lsSet('install-hide',today());render()};
 A.install=async()=>{
   if(deferredInstall){closeModal();deferredInstall.prompt();try{const r=await deferredInstall.userChoice;if(r&&r.outcome==='accepted')deferredInstall=null}catch(e){}render();return}
@@ -825,7 +878,8 @@ const FORMS={
     if(id){data.admissionPaid=!!fd.get('admissionPaid');data.kitPaid=!!fd.get('kitPaid');busy(f,'Saving…');if(await W(()=>D('students/'+id).update(data),'Student saved'))openProfile(id);else busy(f);return}
     data.admissionPaid=false;data.kitPaid=false;data.createdAt=new Date().toISOString();
     const ref=C('students').doc(),pays=[],mode=G('payMode')||'Cash',pl=plan(data.planId),base={studentId:ref.id,studentName:data.name,date:G('payDate')||today(),mode,createdAt:new Date().toISOString()};
-    if(fd.get('payPlan')&&pl){const to=addMonths(data.nextDue,num(pl.months)||1);pays.push({...base,kind:'plan',planId:pl.id,planName:pl.name,months:num(pl.months),periods:1,amount:pAmt(pl,data.nextDue),coversFrom:data.nextDue,coversTo:to});data.nextDue=to}
+    if(fd.get('payPlan')&&!pl)return toast('Choose a fee plan for the plan fee','err');
+    if(fd.get('payPlan')&&pl){const from=base.date,to=addMonths(from,num(pl.months)||1);pays.push({...base,kind:'plan',planId:pl.id,planName:pl.name,months:num(pl.months),periods:1,amount:pAmt(pl,from),coversFrom:from,coversTo:to});data.nextDue=to}
     if(fd.get('payAdm')&&data.admissionFee>0){pays.push({...base,kind:'admission',amount:data.admissionFee});data.admissionPaid=true}
     if(fd.get('payKit')&&data.kitFee>0){pays.push({...base,kind:'kit',amount:data.kitFee});data.kitPaid=true}
     busy(f,'Saving…');
@@ -835,7 +889,7 @@ const FORMS={
     const G=g(fd),s=stu(G('studentId'));if(!s)return toast('Choose a student','err');
     const kind=G('kind'),amount=num(G('amount'));if(amount<=0)return toast('Enter the amount','err');
     const p={studentId:s.id,studentName:s.name,kind,amount,date:G('date')||today(),mode:G('mode'),note:G('note'),createdAt:new Date().toISOString()};let upd=null;
-    if(kind==='plan'){const pl=plan(s.planId);if(!pl)return toast('This student has no fee plan','err');const periods=Math.max(1,parseInt(G('periods'))||1),from=s.nextDue||s.joinDate||today(),to=addMonths(from,(num(pl.months)||1)*periods);Object.assign(p,{planId:pl.id,planName:pl.name,months:num(pl.months),periods,coversFrom:from,coversTo:to});upd={nextDue:to}}
+    if(kind==='plan'){const pl=plan(s.planId);if(!pl)return toast('This student has no fee plan','err');const periods=Math.max(1,parseInt(G('periods'))||1),from=G('pfrom')||s.nextDue||today(),to=addMonths(from,(num(pl.months)||1)*periods);Object.assign(p,{planId:pl.id,planName:pl.name,months:num(pl.months),periods,coversFrom:from,coversTo:to});upd={nextDue:to}}
     else if(kind==='admission')upd={admissionPaid:true};else if(kind==='kit')upd={kitPaid:true};
     busy(f,'Saving…');
     const ok=await W(async()=>{await C('payments').add(p);if(upd)await D('students/'+s.id).update(upd)});
@@ -911,7 +965,10 @@ document.addEventListener('input',e=>{
   if(t.dataset.pf){const f=t.form,sid=f.studentId.value;
     if(t.name==='studentId'){openModal(payForm(sid));return}
     if(t.name==='kind'){openModal(payForm(sid,t.value));return}
-    if(t.name==='periods'){const s=stu(sid),pl=s&&plan(s.planId),n=parseInt(t.value)||1;f.amount.value=calcAmt(s,'plan',n);const from=s.nextDue||s.joinDate||today(),to=addMonths(from,num(pl.months)*n);const c=f.querySelector('#covers');if(c)c.innerHTML=`Covers ${fmtD(from)} → ${fmtD(to)}. Next due date becomes <b>${fmtD(to)}</b>.`}}
+    if(t.name==='pfrom')t.dataset.auto='0';
+    if(t.name==='date'&&f.pfrom&&f.pfrom.dataset.auto==='1')f.pfrom.value=t.value;
+    updPayPreview(f,t.name==='periods'||t.name==='pfrom'||t.name==='date');}
+  if(t.dataset.sf){updDuePreview(t.form)}
 });
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target,fn=FORMS[f.dataset.form];if(fn)fn(f,new FormData(f))});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#confirm').classList.contains('hidden'))A.cno();else if(UI.modal)closeModal()}});
@@ -983,7 +1040,10 @@ render();
         else{unsubs.forEach(x=>{try{x()}catch(e){}});unsubs=[];db=null;PFX='';Object.assign(S,{students:[],plans:[],payments:[],perf:[],ratings:[],att:{},settings:normSettings({})});closeModal();UI.tab='home';UI.signup=false;render();setSync('Signed out','err');showLogin()}
       });
       return;
-    }catch(e){console.error(e);toast('Could not load Firebase — using this device for now','err')}
+    }catch(e){console.error(e);setSync('Offline','err');
+      const L=$('#login');L.classList.remove('hidden');
+      L.innerHTML=`<div class="box" style="text-align:center"><div class="logo" style="margin:0 auto 14px"><svg viewBox="0 0 24 24">${IC.bat}</svg></div><h1 style="font-size:21px">Can't connect</h1><p class="meta" style="margin:6px 0 18px">Please check your internet connection and try again.</p><button class="btn" style="width:100%" data-act="retry">Retry</button></div>`;
+      return}
   }
   // 3) This device only — one academy
   db=localDB();MODE.kind='local';openAcademy('main');
