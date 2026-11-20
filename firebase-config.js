@@ -1,18 +1,9 @@
-// ─────────────────────────────────────────────────────────────
-//  FIREBASE SETTINGS  (optional — for sync between iPhone + PC)
-//
-//  Leave this empty  → app saves data on each device separately.
-//  Fill it in        → app asks for login and syncs everywhere.
-//
-//  Get these values from: Firebase console → Project settings →
-//  "Your apps" → Web app → SDK setup and configuration → Config.
-//  See README.md, Part 3 for step-by-step instructions.
-// ─────────────────────────────────────────────────────────────
+// Firebase settings for academy-app (sync between iPhone + PC, separate login per academy)
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyCZm6CVuoHQv_faUIzvfhkPLNx_7nWuehY",
+  authDomain: "academy-app-eb931.firebaseapp.com",
+  projectId: "academy-app-eb931",
+  storageBucket: "academy-app-eb931.firebasestorage.app",
+  messagingSenderId: "906137164691",
+  appId: "1:906137164691:web:f28cb1f830beea9ec46666"
 };
