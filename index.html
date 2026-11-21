@@ -214,6 +214,11 @@ label.chk input{width:20px;height:20px;min-height:0;-webkit-appearance:checkbox;
 .install .x{width:30px;height:30px;background:transparent}
 .istep{display:flex;gap:12px;align-items:center;padding:12px;background:#f5f8f5;border-radius:14px;margin-bottom:8px;font-weight:600}
 .istep b.n{width:30px;height:30px;border-radius:50%;background:var(--em3);color:#fff;display:grid;place-items:center;flex:none}
+img.av{object-fit:cover;background:#e9eee8;padding:0}
+.photoPick{display:flex;gap:14px;align-items:center;background:#f5f8f5;border-radius:16px;padding:12px}
+.photoPick .ph{width:76px;height:76px;border-radius:22px;flex:none;display:grid;place-items:center;background:#e4ebe5;color:var(--mut);font-size:28px;overflow:hidden}
+.photoPick .ph img{width:100%;height:100%;object-fit:cover}
+.photoPick input[type=file]{display:none}
 /* login */
 .login{position:fixed;inset:0;z-index:60;background:radial-gradient(120% 90% at 100% 0%,#1f8a62,#0a3a2a 60%,#061f16);display:grid;place-items:center;padding:20px}
 .login .box{background:#fff;border-radius:24px;padding:26px 22px;width:100%;max-width:380px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
@@ -279,6 +284,8 @@ const initials=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'')
 const GR=[['#1f8a62','#0f5a3f'],['#2f6fc4','#1d4a8a'],['#c98a2c','#9a6312'],['#8a4fc9','#5d2f96'],['#d0524a','#9c2f28'],['#1d9aa6','#106a73'],['#5a7d2a','#3c5a17']];
 const avStyle=n=>{let h=0;for(const c of String(n||''))h=(h*31+c.charCodeAt(0))>>>0;const g=GR[h%GR.length];return `background:linear-gradient(145deg,${g[0]},${g[1]})`};
 const av=(n,cls='')=>`<div class="av ${cls}" style="${avStyle(n)}">${esc(initials(n))}</div>`;
+const okPhoto=v=>typeof v==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v);
+const avS=(st,cls='')=>st&&okPhoto(st.photo)?`<img class="av ${cls}" src="${st.photo}" alt="">`:av(st?st.name:'',cls);
 const parseOvers=v=>{v=String(v||'').trim();if(!v)return 0;const [o,b]=v.split('.');return (parseInt(o)||0)*6+Math.min(5,parseInt(b||'0')||0)};
 const showOvers=b=>Math.floor(b/6)+(b%6?'.'+(b%6):'');
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -526,7 +533,7 @@ V.home=()=>{
 };
 function feeRow(s,f){
   const rem=s.lastReminded===today()?`<span class="badge b-blu">✓ Reminded today</span>`:s.lastReminded?`<span class="meta">Reminded ${fmtD(s.lastReminded)}</span>`:'';
-  return `<div class="item frow">${av(s.name)}
+  return `<div class="item frow">${avS(s)}
    <div class="grow" data-act="profile" data-id="${s.id}" style="cursor:pointer"><div class="nm">${esc(s.name)}</div>
     <div class="meta">${esc(f.plan?f.plan.name:'')}${f.due?' · due '+fmtD(f.due):''}${s.batch?' · '+esc(s.batch):''}</div>
     <div class="row" style="margin-top:5px;gap:6px">${feeBadge(f)} ${rem}</div></div>
@@ -541,7 +548,7 @@ V.students=()=>{
    <select data-f="fBatch">${opt(batchOpts(),UI.fBatch)}</select>
    ${S.settings.sports.length>1?`<select data-f="fSport">${opt([['','All sports'],...sportOpts()],UI.fSport)}</select>`:''}
    <select data-f="fStatus">${opt([['active','Active'],['inactive','Inactive'],['','All']],UI.fStatus)}</select></div>
-  ${list.length?`<div class="list">${list.map(s=>{const f=feeInfo(s);return `<div class="item click" data-act="profile" data-id="${s.id}">${av(s.name)}
+  ${list.length?`<div class="list">${list.map(s=>{const f=feeInfo(s);return `<div class="item click" data-act="profile" data-id="${s.id}">${avS(s)}
    <div class="grow"><div class="nm">${esc(s.name)} ${s.status==='inactive'?'<span class="badge b-gry">Inactive</span>':''}</div>
    <div class="meta">${esc(sportOf(s.sport||'cricket').name)}${s.batch?' · '+esc(s.batch):''}${s.role?' · '+esc(s.role):''}</div>
    ${s.status!=='inactive'?`<div style="margin-top:5px">${feeBadge(f)}</div>`:''}</div>
@@ -560,7 +567,7 @@ V.fees=()=>{
      ${pm.length?`<div class="list">${pm.map(p=>{const s=stu(p.studentId);const l=s?waLink(s.phone,receiptMsg(p,s)):'';return `<div class="item frow"><div class="av" style="background:linear-gradient(145deg,#e3bb66,#c3913a);color:#2a1d05">₹</div>
       <div class="grow"><div class="nm">${esc(s?s.name:(p.studentName||'Deleted student'))}</div>
       <div class="meta">${fmtD(p.date)} · ${esc(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' ×'+p.periods:''):KINDS[p.kind]||p.kind)} · ${esc(p.mode||'')}</div>${p.kind==='plan'&&p.coversFrom?`<div class="meta">Covers ${fmtD(p.coversFrom)} → ${fmtD(p.coversTo)}</div>`:''}${p.note?`<div class="meta">${esc(p.note)}</div>`:''}</div>
-      <div class="right" style="text-align:right"><div class="amt">${money(p.amount)}</div><div class="acts">${l?`<a class="btn wa xs" href="${esc(l)}" target="_blank" rel="noopener">${ic('receipt','sm')} Receipt</a>`:''}<button class="btn ghost xs" data-act="delPay" data-id="${p.id}">Delete</button></div></div></div>`}).join('')}</div>`:`<div class="card empty"><div class="big">🧾</div>No payments in this period</div>`}`;
+      <div class="right" style="text-align:right"><div class="amt">${money(p.amount)}</div><div class="acts">${l?`<a class="btn wa xs" href="${esc(l)}" target="_blank" rel="noopener">${ic('wa','sm')} Text</a>`:''}<button class="btn ghost xs" data-act="receiptPdf" data-id="${p.id}">🧾 PDF</button><button class="btn ghost xs" data-act="delPay" data-id="${p.id}">Delete</button></div></div></div>`}).join('')}</div>`:`<div class="card empty"><div class="big">🧾</div>No payments in this period</div>`}`;
   }
   const fi=active().map(s=>({s,f:feeInfo(s)}));
   const order={overdue:0,due:1,soon:2,pending:3,paid:4,noplan:5};
@@ -582,7 +589,7 @@ V.attendance=()=>{
     <select data-f="attBatch">${opt(batchOpts(),UI.attBatch)}</select></div>
    <div class="card"><div class="row between"><div><b style="font-size:16px">${fmtD(d)}</b><div class="meta">${list.length} students</div></div><button class="btn sm" data-act="allPresent">Mark all present</button></div>
     <div class="attsum"><div><b style="color:var(--em3)">${p}</b>Present</div><div><b style="color:var(--red)">${a}</b>Absent</div><div><b>${list.length-p-a}</b>Not marked</div></div></div>
-   ${list.length?`<div class="list">${list.map(s=>`<div class="item">${av(s.name)}<div class="grow"><div class="nm">${esc(s.name)}</div><div class="meta">${esc(s.batch||'')}${s.role?' · '+esc(s.role):''}</div></div>
+   ${list.length?`<div class="list">${list.map(s=>`<div class="item">${avS(s)}<div class="grow"><div class="nm">${esc(s.name)}</div><div class="meta">${esc(s.batch||'')}${s.role?' · '+esc(s.role):''}</div></div>
     <div class="att"><button class="p ${pr[s.id]===true?'on':''}" data-act="mark" data-id="${s.id}" data-v="1">P</button><button class="a ${pr[s.id]===false?'on':''}" data-act="mark" data-id="${s.id}" data-v="0">A</button></div></div>`).join('')}</div>`:`<div class="card empty"><div class="big">✅</div>No active students in this batch</div>`}`;
 };
 
@@ -607,7 +614,7 @@ V.performance=()=>{
 V.rankings=()=>{
   const sp=UI.rkSport,cr=sp==='cricket',rows=rankings(sp,UI.rkBatch,UI.rkPeriod),w=S.settings.weights;
   const pod=rows.filter(r=>r.total>0).slice(0,3);
-  const podHtml=pod.length===3?`<div class="podium">${[pod[1],pod[0],pod[2]].map((r,i)=>`<div class="pod ${i===1?'p1':''}" data-act="profile" data-id="${r.s.id}">${i===1?`<div class="av">${esc(initials(r.s.name))}</div>`:av(r.s.name)}<div>${medal(r.rank)}</div><b>${esc(r.s.name)}</b><div class="sc">${r.total.toFixed(1)}</div></div>`).join('')}</div>`:'';
+  const podHtml=pod.length===3?`<div class="podium">${[pod[1],pod[0],pod[2]].map((r,i)=>`<div class="pod ${i===1?'p1':''}" data-act="profile" data-id="${r.s.id}">${i===1&&!okPhoto(r.s.photo)?`<div class="av">${esc(initials(r.s.name))}</div>`:avS(r.s)}<div>${medal(r.rank)}</div><b>${esc(r.s.name)}</b><div class="sc">${r.total.toFixed(1)}</div></div>`).join('')}</div>`:'';
   return `${modeNotice()}<div class="ph"><div><h1>Rankings</h1><div class="meta">Score out of 100</div></div></div>
    <div class="ctrl">${S.settings.sports.length>1?`<select data-f="rkSport">${opt(sportOpts(),sp)}</select>`:''}<select data-f="rkBatch">${opt(batchOpts(),UI.rkBatch)}</select>
     <select data-f="rkPeriod">${opt([['30','Last 30 days'],['90','Last 90 days'],['180','Last 6 months'],['365','Last 1 year'],['all','All time']],UI.rkPeriod)}</select></div>
@@ -653,6 +660,9 @@ function studentForm(s){
   s=s||{};const st=S.settings,isNew=!s.id;
   return `<div class="mh"><h2>${isNew?'Add student':'Edit student'}</h2>${xbtn}</div>
   <form data-form="student" data-id="${esc(s.id||'')}" class="grid2">
+   <div class="full photoPick"><div class="ph" id="phPrev">${okPhoto(s.photo)?`<img src="${s.photo}" alt="">`:'📷'}</div>
+    <div class="grow"><b style="font-size:14px">Student photo</b> <span class="hint">(optional)</span><div class="row" style="margin-top:8px"><label class="btn ghost sm" style="flex-direction:row;cursor:pointer;color:var(--ink)">📷 ${okPhoto(s.photo)?'Change':'Add'} photo<input type="file" accept="image/*" data-photo="1"></label><button class="btn ghost sm" type="button" data-act="rmPhoto" ${okPhoto(s.photo)?'':'style="display:none"'} id="phRm">Remove</button></div></div>
+    <input type="hidden" name="photo" value="${okPhoto(s.photo)?s.photo:''}"></div>
    ${inp('name','Student name *',s.name,'text','required autocomplete="off"')}${inp('parent','Parent / guardian name',s.parent)}
    ${inp('phone','Parent WhatsApp number *',s.phone,'tel','required inputmode="tel" placeholder="98XXXXXXXX"')}${inp('phone2','Alternate number',s.phone2,'tel','inputmode="tel"')}
    ${inp('dob','Date of birth',s.dob,'date')}${sel('gender','Gender',['','Male','Female','Other'],s.gender)}
@@ -688,18 +698,18 @@ function profileHtml(id){
   let perf='';
   if(cr){const c=cricketStats(id);perf=`<div class="stats">${[['Games',c.games],['Runs',c.runs],['High score',c.hs],['Average',c.avg.toFixed(1)],['Strike rate',c.sr.toFixed(0)],['4s / 6s',c.f4+' / '+c.x6],['Wickets',c.wk],['Overs',showOvers(c.bb)],['Economy',c.econ.toFixed(2)],['Best',c.best?c.best.w+'/'+c.best.r:'—'],['Catches',c.ct],['Run outs',c.ro]].map(([l,v])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join('')}</div>`}
   else{const pf=S.perf.filter(p=>p.studentId===id);perf=`<div class="stats"><div class="stat"><b>${pf.length}</b><span>Sessions</span></div><div class="stat"><b>${sum(pf,'score')}</b><span>Total score</span></div><div class="stat"><b>${pf.length?(sum(pf,'score')/pf.length).toFixed(1):0}</b><span>Avg score</span></div></div>`}
-  return `<div class="mh"><div class="prof" style="min-width:0">${av(s.name)}<div style="min-width:0"><h2>${esc(s.name)}</h2><div class="meta">${esc(sp.name)}${s.batch?' · '+esc(s.batch):''}${s.role?' · '+esc(s.role):''}${s.status==='inactive'?' · Inactive':''}</div>${me?`<span class="badge b-gold" style="margin-top:4px">🏆 Rank ${me.rank} of ${rk.length} · ${me.total.toFixed(1)}</span>`:''}</div></div>${xbtn}</div>
-  <div class="row" style="margin-bottom:14px">${chat?`<a class="btn wa sm" href="${esc(chat)}" target="_blank" rel="noopener">${ic('wa','sm')} WhatsApp</a>`:''}${needsAttention(f)?remindBtn(s,f):''}${validUpi(S.settings.upi)?`<button class="btn gold sm" data-act="shareQR" data-id="${id}">▦ Share QR</button>`:''}<button class="btn sm" data-act="pay" data-id="${id}">₹ Payment</button><button class="btn ghost sm" data-act="editStudent" data-id="${id}">${ic('edit','sm')} Edit</button><button class="btn ghost sm" data-act="delStudent" data-id="${id}">Delete</button></div>
+  return `<div class="mh"><div class="prof" style="min-width:0">${avS(s)}<div style="min-width:0"><h2>${esc(s.name)}</h2><div class="meta">${esc(sp.name)}${s.batch?' · '+esc(s.batch):''}${s.role?' · '+esc(s.role):''}${s.status==='inactive'?' · Inactive':''}</div>${me?`<span class="badge b-gold" style="margin-top:4px">🏆 Rank ${me.rank} of ${rk.length} · ${me.total.toFixed(1)}</span>`:''}</div></div>${xbtn}</div>
+  <div class="row" style="margin-bottom:14px">${chat?`<a class="btn wa sm" href="${esc(chat)}" target="_blank" rel="noopener">${ic('wa','sm')} WhatsApp</a>`:''}${needsAttention(f)?remindBtn(s,f):''}${validUpi(S.settings.upi)?`<button class="btn gold sm" data-act="shareQR" data-id="${id}">▦ Share QR</button>`:''}<button class="btn sm" data-act="pay" data-id="${id}">₹ Payment</button><button class="btn ghost sm" data-act="reportPdf" data-id="${id}">📄 Report PDF</button><button class="btn ghost sm" data-act="editStudent" data-id="${id}">${ic('edit','sm')} Edit</button><button class="btn ghost sm" data-act="delStudent" data-id="${id}">Delete</button></div>
   <div class="card" style="box-shadow:none;border:1px solid var(--line)"><div class="row between"><h3 style="margin:0">Fees</h3>${feeBadge(f)}</div>
    <div class="kv" style="margin-top:12px"><div><span>Plan</span>${esc(f.plan?f.plan.name+' · '+planPrice(f.plan):'No plan')}</div><div><span>Next due</span>${fmtD(f.due)}</div><div><span>Due now</span><b>${money(f.amount)}</b></div><div><span>Admission / Kit</span>${num(s.admissionFee)?(s.admissionPaid?'✅':'⏳')+' '+money(s.admissionFee):'—'} / ${num(s.kitFee)?(s.kitPaid?'✅':'⏳')+' '+money(s.kitFee):'—'}</div></div>
-   ${pays.length?`<div class="tw" style="margin-top:12px"><table><thead><tr><th>Date</th><th>For</th><th>Mode</th><th>Amount</th></tr></thead><tbody>${pays.slice(0,12).map(p=>`<tr><td>${fmtD(p.date)}</td><td>${esc(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' ×'+p.periods:''):KINDS[p.kind]||p.kind)}</td><td>${esc(p.mode||'')}</td><td><b>${money(p.amount)}</b></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">No payments yet.</p>'}</div>
+   ${pays.length?`<div class="tw" style="margin-top:12px"><table><thead><tr><th>Date</th><th>For</th><th>Mode</th><th>Amount</th><th></th></tr></thead><tbody>${pays.slice(0,12).map(p=>`<tr><td>${fmtD(p.date)}</td><td>${esc(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' ×'+p.periods:''):KINDS[p.kind]||p.kind)}</td><td>${esc(p.mode||'')}</td><td><b>${money(p.amount)}</b></td><td><button class="btn ghost xs" data-act="receiptPdf" data-id="${p.id}">🧾 PDF</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">No payments yet.</p>'}</div>
   <div class="card" style="box-shadow:none;border:1px solid var(--line)"><h3>Performance</h3>${perf}
    <div class="kv" style="margin-top:14px"><div><span>Attendance 30 days</span>${mk?Math.round(pr/mk*100)+'% ('+pr+'/'+mk+')':'—'}</div><div><span>Attendance all time</span>${mkA?Math.round(prA/mkA*100)+'% ('+prA+'/'+mkA+')':'—'}</div>
    <div><span>Latest coach rating</span>${lr?num(lr.avg).toFixed(1)+'/10 · '+fmtD(lr.date):'—'}</div></div>
    ${lr?`<div style="margin-top:10px">${Object.entries(lr.skills||{}).map(([k,v])=>`<span class="pill">${esc(k)} <b>${v}</b></span>`).join('')}</div>`:''}</div>
   <div class="card" style="box-shadow:none;border:1px solid var(--line)"><h3>Details</h3><div class="kv">${[['Parent',s.parent],['WhatsApp',s.phone],['Alternate',s.phone2],['Date of birth',s.dob?fmtD(s.dob):''],['Gender',s.gender],['Joined',s.joinDate?fmtD(s.joinDate):''],['Batting',s.batStyle],['Bowling',s.bowlStyle],['Address',s.address]].filter(x=>x[1]).map(([l,v])=>`<div><span>${l}</span>${esc(v)}</div>`).join('')}</div>${s.notes?`<p style="margin:12px 0 0">${esc(s.notes)}</p>`:''}</div>`;
 }
-function openProfile(id){openModal(profileHtml(id),{type:'profile',id})}
+function openProfile(id){openModal(profileHtml(id),{type:'profile',id});loadPdfLib().catch(()=>{})}
 function payForm(sid,kind){
   const act=active().sort((a,b)=>String(a.name).localeCompare(b.name));
   const s=sid?stu(sid):null,f=s?feeInfo(s):null,pl=s?plan(s.planId):null;
@@ -842,6 +852,148 @@ A.shareQR=async d=>{
   const url=URL.createObjectURL(blob),pl=payLink(s,amount);
   openModal(`<div class="mh"><h2>Fees QR · ${esc(s.name)}</h2>${xbtn}</div><img src="${url}" alt="QR" style="width:100%;max-width:360px;display:block;margin:0 auto;border-radius:18px"><p class="hint" style="text-align:center">Long-press (phone) or right-click (PC) the image → Save / Copy, then send it on WhatsApp.</p><div class="actions" style="justify-content:center">${pl?`<a class="btn wa" href="${esc(waLink(s.phone,text))}" target="_blank" rel="noopener">${ic('wa','sm')} Send pay link</a>`:''}<button class="btn ghost" data-act="close">Done</button></div>`);
 };
+
+/* ============ PDF: student report & payment receipt ============ */
+let _pdfLib=null;
+function loadPdfLib(){
+  if(window.jspdf)return Promise.resolve(window.jspdf);
+  if(_pdfLib)return _pdfLib;
+  _pdfLib=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='jspdf.min.js';sc.onload=()=>window.jspdf?res(window.jspdf):rej(new Error('PDF library missing'));sc.onerror=()=>{_pdfLib=null;rej(new Error('Could not load PDF library'))};document.head.appendChild(sc)});
+  return _pdfLib;
+}
+let _logo=null;
+async function pdfLogo(){if(_logo!==null)return _logo;try{const r=await fetch('icons/icon-192.png');const b=await r.blob();_logo=await new Promise(ok=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=()=>ok('');fr.readAsDataURL(b)})}catch(e){_logo=''}return _logo}
+const rs=n=>'Rs. '+Math.round(+n||0).toLocaleString('en-IN');
+const pdfSafe=t=>String(t??'').replace(/[^\x20-\x7E -ÿ]/g,'').trim();
+function inWords(n){n=Math.round(+n||0);if(!n)return 'Zero';
+  const a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'],b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  const two=x=>x<20?a[x]:b[Math.floor(x/10)]+(x%10?' '+a[x%10]:''),three=x=>(x>=100?a[Math.floor(x/100)]+' Hundred'+(x%100?' ':''):'')+(x%100?two(x%100):'');
+  const parts=[];const cr=Math.floor(n/1e7);n%=1e7;const lk=Math.floor(n/1e5);n%=1e5;const th=Math.floor(n/1e3);n%=1e3;
+  if(cr)parts.push(three(cr)+' Crore');if(lk)parts.push(two(lk)+' Lakh');if(th)parts.push(two(th)+' Thousand');if(n)parts.push(three(n));return parts.join(' ')}
+function receiptNo(p){if(p.receiptNo)return p.receiptNo;return 'R-'+String(p.id||'').slice(-6).toUpperCase()}
+function nextReceiptNo(){let m=0;S.payments.forEach(p=>{const x=/^R(\d+)$/.exec(p.receiptNo||'');if(x)m=Math.max(m,+x[1])});return 'R'+String(m+1).padStart(4,'0')}
+const EM=[10,58,42],EM2=[23,128,90],GOLD=[212,166,80],INK=[19,33,25],MUT=[111,125,116],LINE=[228,233,227];
+async function pdfHeader(doc,W,title){
+  const st=S.settings;doc.setFillColor(...EM);doc.rect(0,0,W,34,'F');doc.setFillColor(...GOLD);doc.rect(0,34,W,1.4,'F');
+  const lg=await pdfLogo();let x=14;if(lg){try{doc.addImage(lg,'PNG',14,8,18,18);x=37}catch(e){}}
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text(pdfSafe(st.name||'Academy').slice(0,40),x,16);
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(215,235,225);
+  const sub=[pdfSafe(st.address),st.phone?'Ph: '+pdfSafe(st.phone):''].filter(Boolean).join('   |   ');if(sub)doc.text(sub.slice(0,90),x,22.5);
+  doc.setTextColor(...GOLD);doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.text(title,W-14,16,{align:'right'});
+}
+function pdfSection(doc,y,label,W){doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...EM2);doc.text(label.toUpperCase(),14,y);doc.setDrawColor(...LINE);doc.setLineWidth(.4);doc.line(14,y+2,W-14,y+2);return y+8}
+function pdfKV(doc,x,y,k,v,w){doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MUT);doc.text(k.toUpperCase(),x,y);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...INK);doc.text(doc.splitTextToSize(pdfSafe(v)||'-',w||55)[0],x,y+5)}
+function pdfFooter(doc,W,H){doc.setDrawColor(...LINE);doc.line(14,H-18,W-14,H-18);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MUT);doc.text('Generated on '+fmtD(today())+' by '+pdfSafe(S.settings.name||'Academy'),14,H-12);doc.text('Academy Manager',W-14,H-12,{align:'right'})}
+
+async function buildReportPdf(id){
+  const {jsPDF}=await loadPdfLib();const s=stu(id);if(!s)throw new Error('Student not found');
+  const doc=new jsPDF({unit:'mm',format:'a4'}),W=210,H=297,f=feeInfo(s),sp=sportOf(s.sport||'cricket'),cr=sp.id==='cricket';
+  await pdfHeader(doc,W,'STUDENT REPORT');
+  let y=48,nx=14;
+  if(okPhoto(s.photo)){try{doc.setDrawColor(...GOLD);doc.setLineWidth(.8);doc.roundedRect(13.5,38.5,23,23,3,3,'S');doc.addImage(s.photo,s.photo.indexOf('image/png')>0?'PNG':'JPEG',14,39,22,22);nx=42}catch(e){}}
+  doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text(pdfSafe(s.name),nx,y);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...MUT);doc.text([sp.name,s.batch,s.role].filter(Boolean).map(pdfSafe).join('  |  ')||'-',nx,y+6);
+  const rk=rankings(sp.id,'','90');const me=rk.find(r=>r.s.id===id);
+  if(me){doc.setFillColor(...[255,248,232]);doc.setDrawColor(...GOLD);doc.roundedRect(W-66,38,52,22,3,3,'FD');doc.setTextColor(138,93,12);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('RANK (LAST 90 DAYS)',W-40,44.5,{align:'center'});doc.setFontSize(16);doc.text(me.rank+' of '+rk.length,W-40,52,{align:'center'});doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.text('Score '+me.total.toFixed(1)+' / 100',W-40,57,{align:'center'})}
+  y=okPhoto(s.photo)?71:66;pdfKV(doc,14,y,'Parent',s.parent);pdfKV(doc,74,y,'WhatsApp',s.phone);pdfKV(doc,134,y,'Joined',s.joinDate?fmtD(s.joinDate):'-');
+  y+=13;pdfKV(doc,14,y,'Date of birth',s.dob?fmtD(s.dob):'-');pdfKV(doc,74,y,'Batting',s.batStyle);pdfKV(doc,134,y,'Bowling',s.bowlStyle);
+  // fees
+  y+=17;y=pdfSection(doc,y,'Fees',W);
+  const stTxt={overdue:'Overdue by '+(-f.days)+' days',due:'Due today',soon:'Due in '+f.days+' days',pending:'One-time fee pending',paid:'Paid till '+fmtD(f.due),noplan:'No fee plan'}[f.status];
+  pdfKV(doc,14,y,'Plan',f.plan?f.plan.name+' - '+rs(pAmt(f.plan,today())):'No plan');pdfKV(doc,74,y,'Next due date',fmtD(f.due));pdfKV(doc,134,y,'Status',stTxt);
+  if(f.amount>0){doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(200,55,45);doc.text('Amount due now: '+rs(f.amount),14,y+13);y+=6}
+  y+=13;
+  const pays=S.payments.filter(p=>p.studentId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,6);
+  if(pays.length){doc.setFillColor(245,248,245);doc.rect(14,y-4.5,W-28,7,'F');doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...MUT);
+    [['DATE',16],['FOR',48],['PERIOD',95],['MODE',145],['AMOUNT',W-16]].forEach(([t,x])=>doc.text(t,x,y,{align:t==='AMOUNT'?'right':'left'}));y+=7;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...INK);
+    pays.forEach(p=>{doc.text(fmtD(p.date),16,y);doc.text(pdfSafe(p.kind==='plan'?(p.planName||'Plan')+(p.periods>1?' x'+p.periods:''):KINDS[p.kind]||p.kind).slice(0,24),48,y);doc.text(p.kind==='plan'&&p.coversFrom?fmtD(p.coversFrom)+' - '+fmtD(p.coversTo):'-',95,y);doc.text(pdfSafe(p.mode||'-'),145,y);doc.setFont('helvetica','bold');doc.text(rs(p.amount),W-16,y,{align:'right'});doc.setFont('helvetica','normal');doc.setDrawColor(...LINE);doc.line(14,y+2.5,W-14,y+2.5);y+=7.5})}
+  else{doc.setFontSize(9);doc.setTextColor(...MUT);doc.text('No payments recorded yet.',14,y);y+=6}
+  // performance
+  y+=6;y=pdfSection(doc,y,'Performance'+(cr?' (Cricket)':''),W);
+  let stats;if(cr){const c=cricketStats(id);stats=[['Games',c.games],['Runs',c.runs],['High score',c.hs],['Average',c.avg.toFixed(1)],['Strike rate',c.sr.toFixed(0)],['4s / 6s',c.f4+' / '+c.x6],['Wickets',c.wk],['Overs',showOvers(c.bb)],['Economy',c.econ.toFixed(2)],['Best bowling',c.best?c.best.w+'/'+c.best.r:'-'],['Catches',c.ct],['Run outs',c.ro]]}
+  else{const pf=S.perf.filter(p=>p.studentId===id);stats=[['Sessions',pf.length],['Total score',sum(pf,'score')],['Average',pf.length?(sum(pf,'score')/pf.length).toFixed(1):0]]}
+  const bw=(W-28-3*5)/4,bh=15;stats.forEach((st2,i)=>{const cx=14+(i%4)*(bw+5),cy=y+Math.floor(i/4)*(bh+4);doc.setFillColor(245,248,245);doc.roundedRect(cx,cy,bw,bh,2,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...INK);doc.text(String(st2[1]),cx+bw/2,cy+7,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MUT);doc.text(st2[0],cx+bw/2,cy+12,{align:'center'})});
+  y+=Math.ceil(stats.length/4)*(bh+4)+4;
+  // attendance + coach
+  const since30=addDays(today(),-30);let mk=0,pr=0,mkA=0,prA=0;Object.entries(S.att).forEach(([d,doc2])=>{const v=doc2.present&&doc2.present[id];if(v===true||v===false){mkA++;if(v)prA++;if(d>=since30){mk++;if(v)pr++}}});
+  const half=(W-28-8)/2;y=pdfSection(doc,y,'Attendance & coach rating',W);
+  const bar=(x,yy,w,frac,label,val)=>{doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...INK);doc.text(label,x,yy);doc.setFont('helvetica','bold');doc.text(val,x+w,yy,{align:'right'});doc.setFillColor(232,236,230);doc.roundedRect(x,yy+1.8,w,2.6,1.3,1.3,'F');if(frac>0){doc.setFillColor(...EM2);doc.roundedRect(x,yy+1.8,Math.max(2.6,w*Math.min(1,frac)),2.6,1.3,1.3,'F')}};
+  let ya=y;bar(14,ya,half,mk?pr/mk:0,'Last 30 days',mk?Math.round(pr/mk*100)+'% ('+pr+'/'+mk+')':'-');ya+=10;bar(14,ya,half,mkA?prA/mkA:0,'All time',mkA?Math.round(prA/mkA*100)+'% ('+prA+'/'+mkA+')':'-');
+  const lr=S.ratings.filter(r=>r.studentId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];let yc=y;const cx=14+half+8;
+  if(lr){Object.entries(lr.skills||{}).forEach(([k,v])=>{bar(cx,yc,half,v/10,pdfSafe(k),v+'/10');yc+=9});doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...MUT);doc.text('Average '+num(lr.avg).toFixed(1)+'/10  |  rated '+fmtD(lr.date),cx,yc+1)}
+  else{doc.setFontSize(9);doc.setTextColor(...MUT);doc.text('No coach rating yet.',cx,yc)}
+  y=Math.max(ya,yc)+12;
+  // signature
+  if(y<H-40){doc.setDrawColor(...MUT);doc.line(W-74,H-34,W-14,H-34);doc.setFontSize(8.5);doc.setTextColor(...MUT);doc.setFont('helvetica','normal');doc.text('Coach / Academy signature',W-44,H-29,{align:'center'})}
+  pdfFooter(doc,W,H);
+  return {doc,name:'Report-'+pdfSafe(s.name).replace(/\W+/g,'-')+'-'+today()+'.pdf'};
+}
+
+async function buildReceiptPdf(pid){
+  const {jsPDF}=await loadPdfLib();const p=S.payments.find(x=>x.id===pid);if(!p)throw new Error('Payment not found');
+  const s=stu(p.studentId)||{name:p.studentName||'Student'};const doc=new jsPDF({unit:'mm',format:'a5'}),W=148,H=210;
+  await pdfHeader(doc,W,'RECEIPT');
+  let y=46;doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(...INK);doc.text('Payment Receipt',14,y);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...MUT);doc.text('Receipt no: '+receiptNo(p),W-14,y-4,{align:'right'});doc.text('Date: '+fmtD(p.date),W-14,y+1,{align:'right'});
+  y+=10;pdfKV(doc,14,y,'Received from',s.name,60);pdfKV(doc,80,y,'Parent',s.parent||'-',54);
+  y+=14;doc.setFillColor(245,248,245);doc.roundedRect(14,y,W-28,p.kind==='plan'&&p.coversFrom?40:30,3,3,'F');let yy=y+8;
+  const row=(k,v)=>{doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...MUT);doc.text(k,19,yy);doc.setFont('helvetica','bold');doc.setTextColor(...INK);doc.text(pdfSafe(v).slice(0,48),W-19,yy,{align:'right'});yy+=8};
+  row('Payment for',p.kind==='plan'?(p.planName||'Fees')+(p.periods>1?' x '+p.periods:''):KINDS[p.kind]||p.kind);
+  if(p.kind==='plan'&&p.coversFrom)row('Fee period',fmtD(p.coversFrom)+'  to  '+fmtD(p.coversTo));
+  row('Payment mode',p.mode||'Cash');if(p.note)row('Note',p.note);else row('Batch',s.batch||'-');
+  y=yy+6;doc.setFillColor(...EM);doc.roundedRect(14,y,W-28,22,3,3,'F');doc.setTextColor(215,235,225);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text('AMOUNT RECEIVED',19,y+8);
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text(rs(p.amount),W-19,y+14,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(215,235,225);doc.text(doc.splitTextToSize('Rupees '+inWords(p.amount)+' only',70)[0],19,y+16);
+  y+=32;const nd=p.kind==='plan'?p.coversTo:(s.nextDue||'');
+  if(nd){doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(...INK);doc.text('Next fee due date: ',14,y);doc.setFont('helvetica','bold');doc.text(fmtD(nd),14+doc.getTextWidth('Next fee due date: '),y)}
+  // PAID stamp
+  doc.setDrawColor(...EM2);doc.setTextColor(...EM2);doc.setLineWidth(.9);doc.roundedRect(W-56,y-9,38,15,2,2,'S');doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text('PAID',W-37,y+1.5,{align:'center'});
+  doc.setLineWidth(.3);doc.setDrawColor(...MUT);doc.line(W-64,H-34,W-14,H-34);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...MUT);doc.text('Authorised signature',W-39,H-29,{align:'center'});
+  doc.setFontSize(9);doc.setTextColor(...INK);doc.text('Thank you!',14,H-30);
+  pdfFooter(doc,W,H);
+  return {doc,name:'Receipt-'+receiptNo(p)+'-'+pdfSafe(s.name).replace(/\W+/g,'-')+'.pdf',s,p};
+}
+
+let _pendingShare=null;
+async function sharePdf(made,text,phone){
+  const blob=made.doc.output('blob'),file=new File([blob],made.name,{type:'application/pdf'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],text,title:made.name});return}
+    catch(e){if(e&&e.name==='AbortError')return;_pendingShare={file,text}}
+  }
+  const url=URL.createObjectURL(blob);
+  openModal(`<div class="mh"><h2>PDF ready</h2>${xbtn}</div>
+   <div style="text-align:center;padding:4px 0 8px"><div style="width:64px;height:64px;border-radius:18px;background:var(--redl);color:var(--red);display:grid;place-items:center;margin:0 auto 10px;font-weight:800">PDF</div><b>${esc(made.name)}</b></div>
+   <div class="actions" style="justify-content:center;flex-direction:column;align-items:stretch">
+    ${_pendingShare?`<button class="btn wa" data-act="sharePending">${ic('wa','sm')} Share PDF on WhatsApp</button>`:''}
+    <a class="btn" href="${url}" download="${esc(made.name)}">⬇ Download PDF</a>
+    <a class="btn ghost" href="${url}" target="_blank" rel="noopener">Open PDF</a>
+    ${phone&&!_pendingShare?`<a class="btn wa" href="${esc(waLink(phone,text))}" target="_blank" rel="noopener">${ic('wa','sm')} Open WhatsApp chat</a>`:''}
+   </div>
+   ${_pendingShare?'':'<p class="hint" style="text-align:center">On a PC: download the PDF, then open the WhatsApp chat and attach it with the 📎 button.</p>'}`);
+}
+A.sharePending=async()=>{const p=_pendingShare;if(!p)return;try{await navigator.share({files:[p.file],text:p.text});_pendingShare=null;closeModal()}catch(e){if(e&&e.name!=='AbortError')toast('Sharing not available — use Download','err')}};
+A.reportPdf=async d=>{
+  const s=stu(d.id);if(!s)return;toast('Making report PDF…');
+  try{const made=await buildReportPdf(d.id);await sharePdf(made,`Namaste ${s.parent||'Parent'} 🙏\n${s.name} ka progress report — ${S.settings.name}.`,s.phone)}
+  catch(e){console.error(e);toast('Could not make PDF: '+(e.message||''),'err')}
+};
+A.receiptPdf=async d=>{
+  try{const made=await buildReceiptPdf(d.id);const s=made.s;await sharePdf(made,receiptMsg(made.p,stu(made.p.studentId)),s.phone)}
+  catch(e){console.error(e);toast('Could not make PDF: '+(e.message||''),'err')}
+};
+
+function shrinkPhoto(file){return new Promise((ok,bad)=>{
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{const S2=240,c=document.createElement('canvas');c.width=S2;c.height=S2;const x=c.getContext('2d');const m=Math.min(img.width,img.height),sx=(img.width-m)/2,sy=(img.height-m)/2;x.fillStyle='#fff';x.fillRect(0,0,S2,S2);x.drawImage(img,sx,sy,m,m,0,0,S2,S2);URL.revokeObjectURL(url);let q=.8,d=c.toDataURL('image/jpeg',q);while(d.length>40000&&q>.4){q-=.1;d=c.toDataURL('image/jpeg',q)}ok(d)};
+  img.onerror=()=>{URL.revokeObjectURL(url);bad(new Error('Not an image'))};img.src=url})}
+document.addEventListener('change',async e=>{
+  const t=e.target;if(!t.dataset||!t.dataset.photo||!t.files||!t.files[0])return;
+  const f=t.closest('form');try{const d=await shrinkPhoto(t.files[0]);f.photo.value=d;f.querySelector('#phPrev').innerHTML=`<img src="${d}" alt="">`;const rm=f.querySelector('#phRm');if(rm)rm.style.display=''}catch(err){toast('Could not use that photo — try another','err')}
+  t.value='';
+});
+A.rmPhoto=(d,el)=>{const f=el.closest('form');f.photo.value='';f.querySelector('#phPrev').textContent='📷';el.style.display='none'};
 A.retry=()=>location.reload();
 A.installHide=()=>{lsSet('install-hide',today());render()};
 A.install=async()=>{
@@ -872,7 +1024,7 @@ const busy=(f,t)=>{const b=f.querySelector('button:not([type])');if(b){b.disable
 const FORMS={
   async student(f,fd){
     const G=g(fd),id=f.dataset.id;
-    const data={name:G('name'),parent:G('parent'),phone:G('phone'),phone2:G('phone2'),dob:G('dob'),gender:G('gender'),sport:G('sport')||'cricket',batch:G('batch'),role:G('role'),batStyle:G('batStyle'),bowlStyle:G('bowlStyle'),joinDate:G('joinDate')||today(),planId:G('planId'),nextDue:G('nextDue')||today(),admissionFee:num(G('admissionFee')),kitFee:num(G('kitFee')),status:G('status')||'active',address:G('address'),notes:G('notes')};
+    const data={name:G('name'),parent:G('parent'),phone:G('phone'),phone2:G('phone2'),dob:G('dob'),gender:G('gender'),sport:G('sport')||'cricket',batch:G('batch'),role:G('role'),batStyle:G('batStyle'),bowlStyle:G('bowlStyle'),joinDate:G('joinDate')||today(),planId:G('planId'),nextDue:G('nextDue')||today(),admissionFee:num(G('admissionFee')),kitFee:num(G('kitFee')),status:G('status')||'active',address:G('address'),notes:G('notes'),photo:okPhoto(fd.get('photo'))?fd.get('photo'):''};
     if(!data.name)return toast('Enter the student name','err');
     if(!normPhone(data.phone))return toast('Enter a valid 10-digit WhatsApp number','err');
     if(id){data.admissionPaid=!!fd.get('admissionPaid');data.kitPaid=!!fd.get('kitPaid');busy(f,'Saving…');if(await W(()=>D('students/'+id).update(data),'Student saved'))openProfile(id);else busy(f);return}
@@ -882,21 +1034,22 @@ const FORMS={
     if(fd.get('payPlan')&&pl){const from=base.date,to=addMonths(from,num(pl.months)||1);pays.push({...base,kind:'plan',planId:pl.id,planName:pl.name,months:num(pl.months),periods:1,amount:pAmt(pl,from),coversFrom:from,coversTo:to});data.nextDue=to}
     if(fd.get('payAdm')&&data.admissionFee>0){pays.push({...base,kind:'admission',amount:data.admissionFee});data.admissionPaid=true}
     if(fd.get('payKit')&&data.kitFee>0){pays.push({...base,kind:'kit',amount:data.kitFee});data.kitPaid=true}
+    {let n=parseInt((nextReceiptNo().slice(1)),10);pays.forEach(p=>{p.receiptNo='R'+String(n++).padStart(4,'0')})}
     busy(f,'Saving…');
     if(await W(async()=>{await ref.set(data);for(const p of pays)await C('payments').add(p)},'Student added'))setTimeout(()=>openProfile(ref.id),300);else busy(f);
   },
   async payment(f,fd){
     const G=g(fd),s=stu(G('studentId'));if(!s)return toast('Choose a student','err');
     const kind=G('kind'),amount=num(G('amount'));if(amount<=0)return toast('Enter the amount','err');
-    const p={studentId:s.id,studentName:s.name,kind,amount,date:G('date')||today(),mode:G('mode'),note:G('note'),createdAt:new Date().toISOString()};let upd=null;
+    const p={studentId:s.id,studentName:s.name,kind,amount,date:G('date')||today(),mode:G('mode'),note:G('note'),receiptNo:nextReceiptNo(),createdAt:new Date().toISOString()};let upd=null;
     if(kind==='plan'){const pl=plan(s.planId);if(!pl)return toast('This student has no fee plan','err');const periods=Math.max(1,parseInt(G('periods'))||1),from=G('pfrom')||s.nextDue||today(),to=addMonths(from,(num(pl.months)||1)*periods);Object.assign(p,{planId:pl.id,planName:pl.name,months:num(pl.months),periods,coversFrom:from,coversTo:to});upd={nextDue:to}}
     else if(kind==='admission')upd={admissionPaid:true};else if(kind==='kit')upd={kitPaid:true};
     busy(f,'Saving…');
-    const ok=await W(async()=>{await C('payments').add(p);if(upd)await D('students/'+s.id).update(upd)});
+    let pref=null;const ok=await W(async()=>{pref=await C('payments').add(p);if(upd)await D('students/'+s.id).update(upd)});loadPdfLib().catch(()=>{});
     if(!ok){busy(f);return}
     const l=waLink(s.phone,receiptMsg(p,{...s,...(upd||{})}));
     openModal(`<div class="mh"><h2>Payment saved</h2>${xbtn}</div><div style="text-align:center;padding:6px 0 10px"><div style="width:64px;height:64px;border-radius:50%;background:var(--eml);color:var(--em3);display:grid;place-items:center;margin:0 auto 12px;font-size:30px">✓</div><div style="font-size:28px;font-weight:800">${money(amount)}</div><div class="meta" style="font-size:14px">received from <b style="color:var(--ink)">${esc(s.name)}</b></div>${upd&&upd.nextDue?`<div style="margin-top:8px" class="badge b-grn">Next due ${fmtD(upd.nextDue)}</div>`:''}</div>
-     <div class="actions" style="justify-content:center">${l?`<a class="btn wa" href="${esc(l)}" target="_blank" rel="noopener">${ic('receipt','sm')} Send receipt on WhatsApp</a>`:''}<button class="btn ghost" data-act="profile" data-id="${s.id}">Open student</button><button class="btn ghost" data-act="close">Done</button></div>`);
+     <div class="actions" style="justify-content:center">${pref?`<button class="btn" data-act="receiptPdf" data-id="${pref.id}">🧾 Receipt PDF</button>`:''}${l?`<a class="btn wa" href="${esc(l)}" target="_blank" rel="noopener">${ic('wa','sm')} Text receipt</a>`:''}<button class="btn ghost" data-act="profile" data-id="${s.id}">Open student</button><button class="btn ghost" data-act="close">Done</button></div>`);
   },
   async perf(f,fd){
     const G=g(fd),sp=UI.perfSport,cr=sp==='cricket',date=G('date')||today(),grp='g'+uid();

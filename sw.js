@@ -1,5 +1,5 @@
 // Offline support: keeps the app working when the internet is slow or off.
-const CACHE = 'academy-v3';
+const CACHE = 'academy-v5';
 const FILES = ['./', './index.html', './pay.html', './qrcode.js', './firebase-config.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).catch(() => {}).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
